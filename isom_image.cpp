@@ -42,8 +42,6 @@ void
 Image::
 open(const char*  path)
 {
-  IMG_Init(IMG_INIT_PNG);
-
   auto  bmp = IMG_Load(path);
 
   resize(bmp->w,bmp->h);
@@ -86,8 +84,6 @@ open(const char*  path)
 
 
   SDL_FreeSurface(bmp);
-
-  IMG_Quit();
 }
 
 

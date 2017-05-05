@@ -11,6 +11,7 @@
 enum class
 PlaneKind
 {
+  null,
   image,
   color,
   x_image,
@@ -23,12 +24,18 @@ PlaneKind
 };
 
 
+struct Box;
+
+
 struct
 Plane
 {
+  Box*  box;
+
   PlaneKind  kind;
 
   Point3  base_point;
+  Point3  offset;
 
   const Image*  image;
 
@@ -36,7 +43,14 @@ Plane
 
   Color  color;
 
+  Plane():
+  box(nullptr),
+  kind(PlaneKind::null),
+  image(nullptr)
+  {}
+
   constexpr Plane(PlaneKind  k, Point3  base_, int  w, int  h, Color  color_):
+  box(nullptr),
   kind(k),
   base_point(base_),
   image(nullptr),
@@ -44,10 +58,12 @@ Plane
   color(color_){}
 
   constexpr Plane(PlaneKind  k, Point3  base_, const Image&  img, Rect  img_rect):
+  box(nullptr),
   kind(k),
   base_point(base_),
   image(&img),
   image_rect(img_rect){}
+
 
   void  render(Renderer&  dst) const;
 

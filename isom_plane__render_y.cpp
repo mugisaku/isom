@@ -2,6 +2,7 @@
 #include"isom_image.hpp"
 #include"isom_screen.hpp"
 #include"isom_renderer.hpp"
+#include<cstdlib>
 
 
 
@@ -19,7 +20,7 @@ void
 Plane::
 render_y_color(Renderer&  dst) const
 {
-  auto  dst_pt = (base_point-dst.offset).to_2d();
+  auto  dst_pt = (base_point+offset-dst.offset).to_2d();
 
   const int  w = image_rect.w;
   const int  h = image_rect.h;
@@ -39,7 +40,7 @@ render_y_color(Renderer&  dst) const
            (unpt.y >= 0) &&
            (unpt.y <  h))
         {
-          cell.w_value = base_point.y;
+          cell.w_value = (base_point.y+offset.y);
 
           dst.set_cell(cell,dst_pt.x+x,dst_pt.y+y);
         }
@@ -51,7 +52,7 @@ void
 Plane::
 render_y_image(Renderer&  dst) const
 {
-  auto  dst_pt = (base_point-dst.offset).to_2d();
+  auto  dst_pt = (base_point+offset-dst.offset).to_2d();
 
   const int  w = image_rect.w;
   const int  h = image_rect.h;
@@ -72,7 +73,7 @@ render_y_image(Renderer&  dst) const
           static_cast<Color&>(cell) = image->get_color(image_rect.x+unpt.x,
                                                        image_rect.y+image_rect.h-1-unpt.y);
 
-          cell.w_value = base_point.y;
+          cell.w_value = (base_point.y+offset.y);
 
           dst.set_cell(cell,dst_pt.x+x,dst_pt.y+y);
         }

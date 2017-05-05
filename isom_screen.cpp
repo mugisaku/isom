@@ -2,6 +2,7 @@
 #include"isom_renderer.hpp"
 #include"isom_font.hpp"
 #include<SDL.h>
+#include<SDL_image.h>
 #include<vector>
 #include<cstring>
 
@@ -70,13 +71,6 @@ open()
 
   bpp = surface->format->BytesPerPixel;
 
-/*
-    for(int  i = 0;  i < luminance_table_size;   ++i)
-    {
-      palette[i] = map_rgb(luminance_table[i]);
-    }
-*/
-
 
   auto  p = static_cast<uint8_t*>(surface->pixels);
 
@@ -85,12 +79,17 @@ open()
       row_table[y] = p                  ;
                      p += surface->pitch;
     }
+
+
+  IMG_Init(IMG_INIT_PNG);
 }
 
 
 void
 close()
 {
+  IMG_Quit();
+
   SDL_DestroyWindow(window);
 
   SDL_Quit();

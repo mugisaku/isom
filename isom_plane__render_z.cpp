@@ -2,6 +2,7 @@
 #include"isom_image.hpp"
 #include"isom_screen.hpp"
 #include"isom_renderer.hpp"
+#include<cstdlib>
 
 
 
@@ -19,7 +20,7 @@ void
 Plane::
 render_z_color(Renderer&  dst) const
 {
-  auto  dst_pt = (base_point-dst.offset).to_2d();
+  auto  dst_pt = (base_point+offset-dst.offset).to_2d();
 
   const int  w = image_rect.w;
   const int  h = image_rect.h;
@@ -39,7 +40,7 @@ render_z_color(Renderer&  dst) const
            (unpt.y >= 0) &&
            (unpt.y <  h))
         {
-          cell.w_value = (y+(x/2))+base_point.y;
+          cell.w_value = (y+(x/2))+(base_point.y+offset.y);
 
           dst.set_cell(cell,dst_pt.x+x,dst_pt.y+y);
         }
@@ -51,10 +52,12 @@ void
 Plane::
 render_z_image(Renderer&  dst) const
 {
-  auto  dst_pt = (base_point-dst.offset).to_2d();
+  auto  dst_pt = (base_point+offset-dst.offset).to_2d();
 
-  const int  w = image_rect.w;
-  const int  h = image_rect.h;
+  const bool  reversing = (image_rect.w < 0);
+
+  const int  w = std::abs(image_rect.w);
+  const int  h =         (image_rect.h);
 
   Cell  cell;
 
@@ -69,10 +72,20 @@ render_z_image(Renderer&  dst) const
            (unpt.y >= 0) &&
            (unpt.y <  h))
         {
-          static_cast<Color&>(cell) = image->get_color(image_rect.x+unpt.x,
-                                                       image_rect.y+image_rect.h-1-unpt.y);
+            if(reversing)
+            {
+              static_cast<Color&>(cell) = image->get_color(image_rect.x+w-1-unpt.x,
+                                                           image_rect.y+image_rect.h-1-unpt.y);
+            }
 
-          cell.w_value = (y+(x/2))+base_point.y;
+          else
+            {
+              static_cast<Color&>(cell) = image->get_color(image_rect.x+unpt.x,
+                                                           image_rect.y+image_rect.h-1-unpt.y);
+            }
+
+
+          cell.w_value = ((y)+(x/2))+(base_point.y+offset.y);
 
           dst.set_cell(cell,dst_pt.x+x,dst_pt.y+y);
         }

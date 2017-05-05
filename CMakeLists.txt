@@ -34,7 +34,7 @@ if(EMSCRIPTEN)
   set(CMAKE_CXX_COMPILER  em++)
   set(CMAKE_CXX_FLAGS "-std=c++14 -Werror -Wno-switch -O2")
   set(CMAKE_CXX_FLAGS_DEBUG "")
-  set(CMAKE_CXX_LINK_FLAGS  "${CMAKE_CXX_LINK_FLAGS} -s USE_LIBPNG=1 -s USE_SDL=2 -s USE_SDL_IMAGE=2 --preload-file test.png  --use-preload-plugins")
+  set(CMAKE_CXX_LINK_FLAGS  "${CMAKE_CXX_LINK_FLAGS} -s USE_SDL=2 -s USE_SDL_IMAGE=2 --preload-file test.png --preload-file motion.png --use-preload-plugins")
 endif()
 
 

@@ -6,6 +6,8 @@
 #include"isom_image.hpp"
 #include<cstdlib>
 #include<string>
+#include<list>
+#include<random>
 #include<SDL.h>
 #include<SDL_image.h>
 
@@ -15,7 +17,87 @@
 #endif
 
 
+
+
+constexpr int  sz = 64;
+
+
+
+Image  t_img;
+Image  m_img;
+
+
+struct
+Box
+{
+  Point3  base_point;
+
+  Plane  x_plane;
+  Plane  y_plane;
+  Plane  z_plane;
+  Plane  shadow_plane;
+
+  double  vector;
+
+  Box(Point3  base):
+  base_point(base),
+  vector(0),
+  x_plane(PlaneKind::x_image,Point3(),t_img,Rect( 0, 0,sz,sz)),
+  y_plane(PlaneKind::y_image,Point3(),t_img,Rect( 0,sz,sz,sz)),
+  z_plane(PlaneKind::z_image,Point3(),t_img,Rect(sz, 0,sz,sz)),
+  shadow_plane(PlaneKind::y_image,Point3(),t_img,Rect(sz,sz,sz,sz))
+  {
+    x_plane.box = this;
+    y_plane.box = this;
+    z_plane.box = this;
+
+    x_plane.offset.assign(sz/2,0,sz/2);
+    y_plane.offset.assign(-(sz/2),sz,sz/2);
+    z_plane.offset.assign(-(sz/2) ,0,sz/2);
+    shadow_plane.offset.assign(-(sz/2),0,sz/2);
+
+    correct();
+  }
+
+  void  correct()
+  {
+    x_plane.base_point = base_point;
+    y_plane.base_point = base_point;
+    z_plane.base_point = base_point;
+
+    shadow_plane.base_point.x = base_point.x;
+    shadow_plane.base_point.z = base_point.z;
+  }
+
+  void  render(Renderer&  dst) const
+  {
+    x_plane.render(dst);
+    y_plane.render(dst);
+    z_plane.render(dst);
+    shadow_plane.render(dst);
+  }
+
+};
+
+
+
+
 namespace{
+
+
+struct
+RNG
+{
+  std::default_random_engine        eng;
+  std::uniform_int_distribution<>  dist;
+
+  RNG():
+  eng(std::random_device()()),
+  dist(0,4){}
+
+  int  get(){return dist(eng);}
+
+} rng;
 
 
 Renderer
@@ -23,15 +105,19 @@ renderer(screen::width,screen::height);
 
 Plane*  current_plane;
 
-Image  img;
+
+int  phase;
+
+uint32_t  count;
 
 
-constexpr int  sz = 64;
 
-Plane   plane(PlaneKind::image  ,Point3( 0, 0,0),img,Rect(0,0,sz,sz));
-Plane  xplane(PlaneKind::x_color,Point3(sz, 0,0),sz,sz,Color(0xFF,0,0,0x7F));
-Plane  yplane(PlaneKind::y_image,Point3( 0,sz,0),img,Rect(0,sz,sz,sz));
-Plane  zplane(PlaneKind::z_image,Point3( 0, 0,-sz/2),img,Rect(sz,0,sz,sz));
+
+Plane   plane(PlaneKind::z_image,Point3(0,0,0),m_img,Rect(0,0,sz,sz));
+
+
+std::list<Box>
+box_list;
 
 
 bool
@@ -54,9 +140,12 @@ render()
       renderer.clear();
 
       plane.render(renderer);
-      yplane.render(renderer);
-      zplane.render(renderer);
-      xplane.render(renderer);
+
+        for(auto&  box: box_list)
+        {
+          box.render(renderer);
+        }
+
 
       screen::put_renderer(renderer,0,0);
 
@@ -92,7 +181,9 @@ process_button(const SDL_MouseButtonEvent&  evt)
 {
     if(evt.button == SDL_BUTTON_LEFT)
     {
-      current_plane = const_cast<Plane*>(renderer.get_cell(evt.x,screen::height-evt.y).plane);
+      auto&  cell = renderer.get_cell(evt.x,screen::height-evt.y);
+
+      current_plane = const_cast<Plane*>(cell.plane);
 
       previous_point.assign(-evt.x,-(screen::height-evt.y));
     }
@@ -113,8 +204,39 @@ process_motion(const SDL_MouseMotionEvent&  evt)
 
       auto  tmp_pt(previous_point-cur_pt);
 
-      current_plane->base_point.x += tmp_pt.x;
-      current_plane->base_point.y += tmp_pt.y;
+        if(current_plane->box)
+        {
+          auto&  box = *current_plane->box;
+
+            if(current_plane == &box.x_plane)
+            {
+              box.base_point.z -= tmp_pt.x;
+              box.base_point.y += tmp_pt.y;
+            }
+
+          else
+            if(current_plane == &box.y_plane)
+            {
+              box.base_point.z -= tmp_pt.x;
+              box.base_point.x -= tmp_pt.y;
+            }
+
+          else
+            {
+              box.base_point.x += tmp_pt.x;
+              box.base_point.y += tmp_pt.y;
+            }
+
+
+          box.correct();
+        }
+
+      else
+        {
+          current_plane->base_point.x += tmp_pt.x;
+          current_plane->base_point.y += tmp_pt.y;
+        }
+
 
       previous_point = cur_pt;
 
@@ -157,6 +279,110 @@ load(char*  path)
 
 
 void
+step_to_north()
+{
+  plane.base_point.z -= 2;
+
+    if(plane.kind != PlaneKind::x_image)
+    {
+      plane.offset.x =      0;
+      plane.offset.z = (sz/2);
+
+      plane.kind = PlaneKind::x_image;
+    }
+
+
+  auto&  w = plane.image_rect.w;
+
+    if(w < 0)
+    {
+      w = -w;
+    }
+
+
+  needed_to_redraw = true;
+}
+
+
+void
+step_to_south()
+{
+  plane.base_point.z += 2;
+
+    if(plane.kind != PlaneKind::x_image)
+    {
+      plane.offset.x =      0;
+      plane.offset.z = (sz/2);
+
+      plane.kind = PlaneKind::x_image;
+    }
+
+
+  auto&  w = plane.image_rect.w;
+
+    if(w >= 0)
+    {
+      w = -w;
+    }
+
+
+  needed_to_redraw = true;
+}
+
+
+void
+step_to_west()
+{
+  plane.base_point.x -= 2;
+
+    if(plane.kind != PlaneKind::z_image)
+    {
+      plane.offset.x = -(sz/2);
+      plane.offset.z = 0;
+
+      plane.kind = PlaneKind::z_image;
+    }
+
+
+  auto&  w = plane.image_rect.w;
+
+    if(w >= 0)
+    {
+      w = -w;
+    }
+
+
+  needed_to_redraw = true;
+}
+
+
+void
+step_to_east()
+{
+  plane.base_point.x += 2;
+
+    if(plane.kind != PlaneKind::z_image)
+    {
+      plane.offset.x = -(sz/2);
+      plane.offset.z = 0;
+
+      plane.kind = PlaneKind::z_image;
+    }
+
+
+  auto&  w = plane.image_rect.w;
+
+    if(w < 0)
+    {
+      w = -w;
+    }
+
+
+  needed_to_redraw = true;
+}
+
+
+void
 main_loop()
 {
   static SDL_Event  evt;
@@ -175,25 +401,6 @@ main_loop()
             }
           break;
       case(SDL_KEYDOWN):
-//if(0)
-{
-            switch(evt.key.keysym.sym)
-            {
-          case(SDLK_LEFT ):  ;  needed_to_redraw = true;break;
-          case(SDLK_RIGHT):  ;  needed_to_redraw = true;break;
-          case(SDLK_UP   ):  ;  needed_to_redraw = true;break;
-          case(SDLK_DOWN ):  ;  needed_to_redraw = true;break;
-          case(SDLK_SPACE): screen::save_as_bmp();break;
-            }
-}
-if(0)
-{
-            switch(evt.key.keysym.sym)
-            {
-          case(SDLK_UP   ):  ++renderer.w_max;  needed_to_redraw = true;break;
-          case(SDLK_DOWN ):  --renderer.w_max;  needed_to_redraw = true;break;
-            }
-}
           break;
       case(SDL_QUIT):
           fflush(stdout);
@@ -210,6 +417,76 @@ if(0)
       case(SDL_MOUSEMOTION):
           process_motion(evt.motion);
           break;
+        }
+    }
+
+
+auto  now = SDL_GetTicks();
+static uint32_t  last_time;
+if(now > (last_time+160))
+{
+last_time = now;
+
+  if(++phase >= 4)
+  {
+    phase = 0;
+  }
+
+static const int  table[] = {0,1,0,2};
+
+plane.image_rect.x = sz*table[phase];
+
+  needed_to_redraw = true;
+}
+
+
+    for(auto&  box: box_list)
+    {
+        if(box.base_point.y)
+        {
+          box.vector -= 1.0;
+
+          needed_to_redraw = true;
+        }
+
+
+      box.base_point.y += box.vector;
+
+        if(box.base_point.y <= 0)
+        {
+          box.base_point.y = 0;
+
+          box.vector /=  2;
+          box.vector *= -1;
+        }
+
+
+      box.correct();
+    }
+
+
+  static void  (*step)() = step_to_north;
+
+    if(count)
+    {
+      --count;
+
+      step();
+
+      needed_to_redraw = true;
+    }
+
+
+    if(!count)
+    {
+      count = 4;
+
+        switch(rng.get())
+        {
+      case(0): step = step_to_north;break;
+      case(1): step = step_to_south;break;
+      case(2): step = step_to_west;break;
+      case(3): step = step_to_east;break;
         }
     }
 
@@ -233,7 +510,13 @@ main(int  argc, char**  argv)
   renderer.w_min = INT32_MIN;
   renderer.w_max = INT32_MAX;
 
-  img.open("test.png");
+  t_img.open("test.png");
+  m_img.open("motion.png");
+
+  box_list.emplace_back(Point3(-64,200,-200));
+  box_list.emplace_back(Point3(  0,200,-200));
+
+  step_to_north();
 
   render();
 
