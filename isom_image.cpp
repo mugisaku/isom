@@ -87,5 +87,24 @@ open(const char*  path)
 }
 
 
+void
+Image::
+set_colorkey(uint8_t  r, uint8_t  g, uint8_t  b)
+{
+  int  n = width*height;
+
+  auto  p = table.data();
+
+    while(n--)
+    {
+      auto&  color = *p++;
+
+      color.a = ((color.r == r) &&
+                 (color.g == g) &&
+                 (color.b == b))? 0:255;
+    }
+}
+
+
 
 

@@ -2,86 +2,53 @@
 #define ISOM_PLANE_HPP_INCLUDED
 
 
-#include"isom_point3.hpp"
+#include"isom_point.hpp"
 #include"isom_screen.hpp"
 #include"isom_renderer.hpp"
 #include"isom_image.hpp"
 
 
-enum class
-PlaneKind
-{
-  null,
-  image,
-  color,
-  x_image,
-  x_color,
-  y_image,
-  y_color,
-  z_image,
-  z_color,
-
-};
-
-
-struct Box;
 
 
 struct
 Plane
 {
-  Box*  box;
+  Point  base;
 
-  PlaneKind  kind;
+  int  x_width;
+  int  y_width;
 
-  Point3  base_point;
-  Point3  offset;
+  int  x_degree;
+  int  y_degree;
+  int  z_degree;
 
-  const Image*  image;
+  Point  points[4];
 
-  Rect  image_rect;
+  int  image_x;
+  int  image_y;
 
-  Color  color;
-
-  Plane():
-  box(nullptr),
-  kind(PlaneKind::null),
-  image(nullptr)
-  {}
-
-  constexpr Plane(PlaneKind  k, Point3  base_, int  w, int  h, Color  color_):
-  box(nullptr),
-  kind(k),
-  base_point(base_),
-  image(nullptr),
-  image_rect(0,0,w,h),
-  color(color_){}
-
-  constexpr Plane(PlaneKind  k, Point3  base_, const Image&  img, Rect  img_rect):
-  box(nullptr),
-  kind(k),
-  base_point(base_),
-  image(&img),
-  image_rect(img_rect){}
+  constexpr Plane(const Point&  base_, int  x_width_, int  y_width_):
+  base(base_),
+  x_width(x_width_),
+  y_width(y_width_),
+  x_degree(0),
+  y_degree(0),
+  z_degree(0),
+  image_x(0),
+  image_y(0){update();}
 
 
-  void  render(Renderer&  dst) const;
+  void  update();
+  void  rotate_x();
+  void  rotate_y();
+  void  rotate_z();
 
-  void  render_color(Renderer&  dst) const;
-  void  render_image(Renderer&  dst) const;
-
-  void  render_x_color(Renderer&  dst) const;
-  void  render_x_image(Renderer&  dst) const;
-
-  void  render_y_color(Renderer&  dst) const;
-  void  render_y_image(Renderer&  dst) const;
- 
-  void  render_z_color(Renderer&  dst) const;
-  void  render_z_image(Renderer&  dst) const;
-
-  void  print() const{}
+  void  render_face(Renderer&  dst) const;
+  void  render_wire(Renderer&  dst) const;
 
 };
+
+
 
 
 

@@ -47,6 +47,8 @@ public:
 
   void  open(const char*  path);
 
+  void  set_colorkey(uint8_t  r, uint8_t  g, uint8_t  b);
+
   int  get_width() const{return width;}
   int  get_height() const{return height;}
 

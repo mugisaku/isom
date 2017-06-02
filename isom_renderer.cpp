@@ -33,7 +33,7 @@ clear()
 
     while(it != end)
     {
-      it->w_value = INT32_MIN;
+      it->z     = INT32_MIN;
       it->plane = nullptr;
 
       it->r = 0;
@@ -62,7 +62,7 @@ set_cell(const Cell&  src, int  x, int  y)
     {
       auto&  dst = table[width*y+x];
 
-        if(dst.w_value <= src.w_value)
+        if(dst.z <= src.z)
         {
           dst.plane = src.plane;
 
@@ -70,7 +70,7 @@ set_cell(const Cell&  src, int  x, int  y)
             {
                 if(src.a == 255)
                 {
-                  dst.w_value = src.w_value;
+                  dst.z = src.z;
 
                   dst.r = src.r;
                   dst.g = src.g;
@@ -86,6 +86,14 @@ set_cell(const Cell&  src, int  x, int  y)
             }
         }
     }
+}
+
+
+Cell&
+Renderer::
+get_cell(int  x, int  y)
+{
+  return table[width*y+x];
 }
 
 

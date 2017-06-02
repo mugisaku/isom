@@ -8,81 +8,97 @@
 
 void
 Plane::
-render(Renderer&  dst) const
+update()
 {
-    switch(kind)
+  points[0].x = base.x;
+  points[0].y = base.y;
+  points[0].z = base.z;
+
+  points[1].x = base.x;
+  points[1].y = base.y+y_width;
+  points[1].z = base.z;
+
+  points[2].x = base.x+x_width;
+  points[2].y = base.y+y_width;
+  points[2].z = base.z;
+
+  points[3].x = base.x+x_width;
+  points[3].y = base.y;
+  points[3].z = base.z;
+
+  rotate_x();
+  rotate_y();
+  rotate_z();
+}
+
+
+void
+Plane::
+rotate_x()
+{
+  auto  rad = to_radian(x_degree);
+
+  auto  sin_value = std::sin(rad);
+  auto  cos_value = std::cos(rad);
+
+    for(auto&  pt: points)
     {
-  case(PlaneKind::color): render_color(dst);break;
-  case(PlaneKind::image): render_image(dst);break;
-  case(PlaneKind::x_color): render_x_color(dst);break;
-  case(PlaneKind::x_image): render_x_image(dst);break;
-  case(PlaneKind::y_color): render_y_color(dst);break;
-  case(PlaneKind::y_image): render_y_image(dst);break;
-  case(PlaneKind::z_color): render_z_color(dst);break;
-  case(PlaneKind::z_image): render_z_image(dst);break;
-  default:;
+      pt = pt.rotate_x(sin_value,cos_value);
     }
 }
 
 
 void
 Plane::
-render_color(Renderer&  dst) const
+rotate_y()
 {
-  auto  dst_pt = (base_point+offset-dst.offset).to_2d();
+  auto  rad = to_radian(y_degree);
 
-  const int  w = image_rect.w;
-  const int  h = image_rect.h;
+  auto  sin_value = std::sin(rad);
+  auto  cos_value = std::cos(rad);
 
-  Cell  cell;
-
-  cell.plane = this;
-
-  static_cast<Color&>(cell) = color;
-
-    for(int  y = h;  y >= 0;  --y){
-    for(int  x = 0;  x <  w;  ++x){
-        if((x >= 0) &&
-           (x <  w) &&
-           (y >= 0) &&
-           (y <  h))
-        {
-          cell.w_value = (y)+(base_point.y+offset.y);
-
-          dst.set_cell(cell,dst_pt.x+x,dst_pt.y+y);
-        }
-    }}
+    for(auto&  pt: points)
+    {
+      pt = pt.rotate_y(sin_value,cos_value);
+    }
 }
 
 
 void
 Plane::
-render_image(Renderer&  dst) const
+rotate_z()
 {
-  auto  dst_pt = (base_point+offset-dst.offset).to_2d();
+  auto  rad = to_radian(z_degree);
 
-  const int  w = image_rect.w;
-  const int  h = image_rect.h;
+  auto  sin_value = std::sin(rad);
+  auto  cos_value = std::cos(rad);
 
-  Cell  cell;
+    for(auto&  pt: points)
+    {
+      pt = pt.rotate_z(sin_value,cos_value);
+    }
+}
 
-  cell.plane = this;
 
-    for(int  y = h;  y >= 0;  --y){
-    for(int  x = 0;  x <  w;  ++x){
-        if((x >= 0) &&
-           (x <  w) &&
-           (y >= 0) &&
-           (y <  h))
-        {
-          static_cast<Color&>(cell) = image->get_color(image_rect.x+x,
-                                                       image_rect.y+image_rect.h-1-y);
+void
+Plane::
+render_face(Renderer&  dst) const
+{
+  dst.render_polygon(points[0],points[1],points[2],Color(0xFF,0xFF,0x00));
+  dst.render_polygon(points[0],points[2],points[3],Color(0xFF,0xFF,0x00));
+}
 
-          cell.w_value = (y)+(base_point.y+offset.y);
 
-          dst.set_cell(cell,dst_pt.x+x,dst_pt.y+y);
-        }
-    }}
+void
+Plane::
+render_wire(Renderer&  dst) const
+{
+  constexpr Color  wire_color(0xFF,0xFF,0xFF);
+
+  dst.render_line(points[0],points[1],wire_color);
+  dst.render_line(points[1],points[2],wire_color);
+  dst.render_line(points[2],points[3],wire_color);
+  dst.render_line(points[3],points[0],wire_color);
 }
 
 

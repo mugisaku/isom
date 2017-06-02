@@ -258,7 +258,8 @@ put_renderer(const Renderer&  src, int  x, int  y, int  w, int  h)
 
     for(int  yy = 0;  yy < h;  ++yy){
     for(int  xx = 0;  xx < w;  ++xx){
-      auto&  cell = src.get_cell(x+xx,rend_h-y-1-yy);
+//      auto&  cell = src.get_cell(x+xx,rend_h-y-1-yy);
+      auto&  cell = src.get_cell(x+xx,y+yy);
 
       put_color(get_color(cell.r,cell.g,cell.b),xx,yy);
     }}

@@ -1,10 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
-project(gmbb)
 
 
 find_program(CCACHE_FOUND ccache)
 if(CCACHE_FOUND)
-  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "CCACHE_DIR=/tmp/ccachedir ccache")
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "  sleep 1;  CCACHE_DIR=/tmp/ccachedir ccache")
 endif(CCACHE_FOUND)
 
 
@@ -18,7 +17,7 @@ endif()
 
 set(CMAKE_C_COMPILER  gcc)
 set(CMAKE_C_FLAGS   "-std=c14 -Werror")
-set(CMAKE_CXX_COMPILER  g++)
+set(CMAKE_CXX_COMPILER  "g++")
 set(CMAKE_CXX_FLAGS "-std=c++14 -Werror")
 set(CMAKE_CXX_LINK_FLAGS  "-lstdc++ -lz -lpng -lSDL2 -lSDL2_image -lSDL2main")
 
@@ -41,13 +40,11 @@ endif()
 
 
 set(SOURCES
-  isom_point2.cpp
-  isom_point3.cpp
+  isom_LineContext.cpp
+  isom_point.cpp
   isom_plane.cpp
-  isom_plane__render_x.cpp
-  isom_plane__render_y.cpp
-  isom_plane__render_z.cpp
   isom_renderer.cpp
+  isom_renderer__render.cpp
   isom_font.cpp
   isom_image.cpp
   isom_screen.cpp
@@ -56,7 +53,9 @@ set(SOURCES
 
 include_directories(.)
 include_directories(/usr/include/SDL2)
-add_executable("Isom${EXECUTABLE_EXTENSION}" isom.cpp ${SOURCES})
+add_executable("testMain${EXECUTABLE_EXTENSION}" test_main.cpp ${SOURCES})
+add_executable("testFillTriangle${EXECUTABLE_EXTENSION}" test__fill_triangle.cpp ${SOURCES})
+add_executable("testLineContext${EXECUTABLE_EXTENSION}" test__LineContext.cpp ${SOURCES})
 
 
 if(EMSCRIPTEN)
