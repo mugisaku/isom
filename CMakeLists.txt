@@ -42,6 +42,7 @@ endif()
 set(SOURCES
   isom_LineContext.cpp
   isom_FaceRenderingContext.cpp
+  isom_TextureMappingContext.cpp
   isom_TextureRenderingContext.cpp
   isom_point.cpp
   isom_plane.cpp
@@ -55,7 +56,8 @@ set(SOURCES
 include_directories(.)
 include_directories(/usr/include/SDL2)
 add_executable("testMain${EXECUTABLE_EXTENSION}" test_main.cpp ${SOURCES})
-add_executable("testLineContext${EXECUTABLE_EXTENSION}" test__LineContext.cpp ${SOURCES})
+add_executable("testLineContext${EXECUTABLE_EXTENSION}" test_LineContext.cpp ${SOURCES})
+add_executable("testTextureRenderingContext${EXECUTABLE_EXTENSION}" test_TextureRenderingContext.cpp ${SOURCES})
 
 
 if(EMSCRIPTEN)

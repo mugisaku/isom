@@ -3,26 +3,42 @@
 
 
 #include"isom_LineContext.hpp"
+#include"isom_TextureMappingContext.hpp"
 #include"isom_image.hpp"
 
 
 
 
+struct
+TextureVertex: public Point
+{
+  int  u;
+  int  v;
+
+  constexpr TextureVertex(const Point&  pt=Point(), int  u_=0, int  v_=0):
+  Point(pt), u(u_), v(v_){}
+
+};
+
+
 class
 TextureRenderingContext
 {
+  static constexpr int  shift_amount = 20;
+
   const Image*  image;
 
   LineContext  longer;
   LineContext   upper;
   LineContext   lower;
 
-  LineContext  longer_vtx;
-  LineContext   upper_vtx;
-  LineContext   lower_vtx;
-
   LineContext  plotter;
-  LineContext   seeker;
+
+  TextureMappingContext  longer_mapper;
+  TextureMappingContext   upper_mapper;
+  TextureMappingContext   lower_mapper;
+
+  TextureMappingContext  final_mapper;
 
   int  phase;
 
@@ -31,18 +47,19 @@ TextureRenderingContext
   void  step_line();
 
 public:
-  TextureRenderingContext(const Image&  img, const Point&  a, const Point&  b, const Point&  c);
+  TextureRenderingContext(const Image&  img, const TextureVertex&  a, const TextureVertex&  b, const TextureVertex&  c);
 
 
-  void  reset(const Image&  img, const Point&  a, const Point&  b, const Point&  c);
+  void  reset(const Image&  img, const TextureVertex&  a, const TextureVertex&  b, const TextureVertex&  c);
 
 
   const Image&  get_image() const{return *image;}
 
+  const TextureMappingContext&  get_mapper() const{return final_mapper;}
+
   const Color&  get_color() const;
 
   const LineContext&  get_plotter() const{return plotter;}
-  const LineContext&  get_seeker()  const{return  seeker;}
 
   bool  is_finished() const
   {

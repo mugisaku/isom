@@ -4,7 +4,7 @@
 
 
 TextureRenderingContext::
-TextureRenderingContext(const Image&  img, const Point&  a, const Point&  b, const Point&  c)
+TextureRenderingContext(const Image&  img, const TextureVertex&  a, const TextureVertex&  b, const TextureVertex&  c)
 {
   reset(img,a,b,c);
 }
@@ -14,13 +14,15 @@ TextureRenderingContext(const Image&  img, const Point&  a, const Point&  b, con
 
 void
 TextureRenderingContext::
-reset(const Image&  img, const Point&  a, const Point&  b, const Point&  c)
+reset(const Image&  img, const TextureVertex&  a, const TextureVertex&  b, const TextureVertex&  c)
 {
-  auto&     top = ::upper(a,::upper(b,c));
-  auto&  bottom = ::lower(a,::lower(b,c));
+  using T = const TextureVertex&;
 
-  auto&  middle = ((&a != &top) && (&a != &bottom))? a:
-                  ((&b != &top) && (&b != &bottom))? b:c;
+  auto&     top = static_cast<T>(::upper(a,::upper(b,c)));
+  auto&  bottom = static_cast<T>(::lower(a,::lower(b,c)));
+
+  auto&  middle = static_cast<T>(((&a != &top) && (&a != &bottom))? a:
+                                 ((&b != &top) && (&b != &bottom))? b:c);
 
   image = &img;
 
@@ -28,9 +30,10 @@ reset(const Image&  img, const Point&  a, const Point&  b, const Point&  c)
    upper = LineContext(   top,middle);
    lower = LineContext(middle,bottom);
 
-  longer_vtx = LineContext(   top.u,   top.v,0,bottom.u,bottom.v,longer.get_distance());
-   upper_vtx = LineContext(   top.u,   top.v,0,middle.u,middle.v, upper.get_distance());
-   lower_vtx = LineContext(middle.u,middle.v,0,bottom.u,bottom.v, lower.get_distance());
+  longer_mapper.reset(   top.u,   top.v,bottom.u,bottom.v,longer.get_distance());
+   upper_mapper.reset(   top.u,   top.v,middle.u,middle.v, upper.get_distance());
+   lower_mapper.reset(middle.u,middle.v,bottom.u,bottom.v, lower.get_distance());
+
 
   phase = 1;
 
@@ -44,7 +47,8 @@ const Color&
 TextureRenderingContext::
 get_color() const
 {
-  return image->get_color(seeker.get_x(),seeker.get_y());
+  return image->get_color(final_mapper.get_u(),
+                          final_mapper.get_v());
 }
 
 
@@ -63,15 +67,15 @@ step_line()
 
       else
         {
-          longer.step();
-          longer_vtx.step();
+                 longer.step();
+          longer_mapper.step();
         }
     }
 
   else
     {
-      plotter.step();
-       seeker.step();
+           plotter.step();
+      final_mapper.step();
     }
 }
 
@@ -89,8 +93,8 @@ step()
     {
       int  y = longer.get_y();
 
-       LineContext&  shorter     = ((phase == 1)? upper    :lower    );
-       LineContext&  shorter_vtx = ((phase == 1)? upper_vtx:lower_vtx);
+       auto&  shorter        = ((phase == 1)? upper       :lower       );
+       auto&  shorter_mapper = ((phase == 1)? upper_mapper:lower_mapper);
 
         while(shorter.get_y() > y)
         {
@@ -112,15 +116,15 @@ step()
 
 
           shorter.step();
-          shorter_vtx.step();
+          shorter_mapper.step();
         }
 
 
-      plotter = LineContext( longer.get_x(),y, longer.get_z(),
-                            shorter.get_x(),y,shorter.get_z());
+      plotter.reset( longer.get_x(),y, longer.get_z(),
+                    shorter.get_x(),y,shorter.get_z());
 
-       seeker = LineContext( longer_vtx.get_x(), longer_vtx.get_y(),0,
-                            shorter_vtx.get_x(),shorter_vtx.get_y(),plotter.get_distance());
+      final_mapper.reset( longer_mapper.get_u(), longer_mapper.get_v(),
+                         shorter_mapper.get_u(),shorter_mapper.get_v(),plotter.get_distance());
 
       plotting_now = true;
     }

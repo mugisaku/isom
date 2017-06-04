@@ -20,6 +20,8 @@ Plane
   Point              points[4];
   Point  transformed_points[4];
 
+  Point  offset;
+
   int  image_x;
   int  image_y;
 
@@ -40,11 +42,11 @@ Plane
   void  rotate_z();
 
   FaceRenderingContext  make_face_rendering_context(int  i, const Color&  color) const;
-  TextureRenderingContext  make_texture_rendering_context(int  i, const Image&  image) const;
+  TextureRenderingContext  make_texture_rendering_context(int  i, const Image&  image, const Rect&  rect) const;
 
   void  render_face(Renderer&  dst, const Color&  color) const;
   void  render_wire(Renderer&  dst) const;
-  void  render_texture(Renderer&  dst, const Image&  img) const;
+  void  render_texture(Renderer&  dst, const Image&  img, const Rect&  rect) const;
 
 };
 

@@ -37,13 +37,6 @@ LineContext
   value_type  y;
   value_type  z;
 
-  void  initialize(value_type  x0_,
-                   value_type  y0_,
-                   value_type  z0_,
-                   value_type  x1_,
-                   value_type  y1_,
-                   value_type  z1_);
-
 public:
   LineContext(value_type  x0_=0,
               value_type  y0_=0,
@@ -53,6 +46,14 @@ public:
               value_type  z1_=0);
 
   LineContext(const Point&  a, const Point&  b);
+
+
+  void  reset(value_type  x0_,
+              value_type  y0_,
+              value_type  z0_,
+              value_type  x1_,
+              value_type  y1_,
+              value_type  z1_);
 
   value_type  get_x() const{return x>>shift_amount;}
   value_type  get_y() const{return y>>shift_amount;}

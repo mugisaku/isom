@@ -111,8 +111,7 @@ void
 Renderer::
 put(const Color&  color, int  x, int  y, int  z)
 {
-  x += x_offset;
-  y += y_offset;
+  y = -y;
 
     if(test(x,y))
     {
@@ -134,7 +133,7 @@ void
 Renderer::
 put(const LineContext&  lc, const Color&  color)
 {
-  put(color,lc.get_x(),-lc.get_y(),lc.get_z());
+  put(color,lc.get_x(),lc.get_y(),lc.get_z());
 }
 
 
@@ -165,7 +164,7 @@ render_dotset(const DotSet&  dotset)
 {
     for(auto&  dot: dotset)
     {
-      put(dot,dot.x,-dot.y,dot.z);
+      put(dot,dot.x,dot.y,dot.z);
     }
 }
 
@@ -178,7 +177,7 @@ render_face(FaceRenderingContext&  ctx)
     {
       auto&  p = ctx.get_plotter();
 
-      put(ctx.get_color(),p.get_x(),-p.get_y(),p.get_z());
+      put(ctx.get_color(),p.get_x(),p.get_y(),p.get_z());
 
         if(ctx.is_finished())
         {
@@ -198,9 +197,8 @@ render_texture(TextureRenderingContext&  ctx)
     for(;;)
     {
       auto&  p = ctx.get_plotter();
-      auto&  s = ctx.get_seeker();
 
-      put(ctx.get_color(),p.get_x(),-p.get_y(),p.get_z());
+      put(ctx.get_color(),p.get_x(),p.get_y(),p.get_z());
 
         if(ctx.is_finished())
         {
@@ -212,6 +210,33 @@ render_texture(TextureRenderingContext&  ctx)
     }
 }
 
+
+void
+Renderer::
+render_image(const Image&  src, const Rect*  src_rect, int  src_z, int  dst_x, int  dst_y)
+{
+  Rect  tmp_rect;
+
+    if(!src_rect)
+    {
+      tmp_rect.x = 0;
+      tmp_rect.y = 0;
+      tmp_rect.w = src.get_width();
+      tmp_rect.h = src.get_height();
+
+      src_rect = &tmp_rect;
+    }
+
+
+  auto&  rect = *src_rect;
+
+    for(int  yy = 0;  yy < rect.h;  ++yy){
+    for(int  xx = 0;  xx < rect.w;  ++xx){
+      auto&  color = src.get_color(rect.x+xx,rect.y+yy);
+
+      put(color,dst_x+xx,-(dst_y+yy),src_z);
+    }}
+}
 
 
 

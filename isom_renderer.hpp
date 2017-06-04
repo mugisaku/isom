@@ -36,9 +36,6 @@ Renderer
   int  height;
 
 public:
-  int  x_offset=0;
-  int  y_offset=0;
-
   Renderer(int  w=0, int  h=0);
 
   void  clear();
@@ -68,6 +65,7 @@ public:
   void  render_dotset(const DotSet&  dotset);
   void  render_face(FaceRenderingContext&  ctx);
   void  render_texture(TextureRenderingContext&  ctx);
+  void  render_image(const Image&  src, const Rect*  src_rect, int  src_z, int  dst_x, int  dst_y);
 
 };
 

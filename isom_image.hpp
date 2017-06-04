@@ -31,6 +31,20 @@ Color
 };
 
 
+struct
+Rect
+{
+  int  x;
+  int  y;
+  int  w;
+  int  h;
+
+  constexpr Rect(int  x_=0,int  y_=0,int  w_=0,int  h_=0):
+  x(x_), y(y_), w(w_), h(h_){}
+
+};
+
+
 class
 Image
 {

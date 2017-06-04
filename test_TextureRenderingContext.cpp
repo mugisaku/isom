@@ -27,52 +27,25 @@ Renderer
 renderer(screen::width,screen::height);
 
 
-constexpr int  sz = 64;
+constexpr int  sz = 128;
+
 
 Image
 texture;
 
 
-Plane  box_planes[6];
+Plane  base_plane(Point(0,sz,0),Point(sz,sz,0),Point(sz,0,0),Point(0,0,0));
+Plane       plane;
 
 
 DotSet
 dotset;
 
+DotSet
+nega_dotset;
+
 std::vector<TextureRenderingContext>
 ctx_stack;
-
-
-void
-make_box()
-{
-  box_planes[0] = Plane({Point(0,0,0),Point(sz,0,0),Point(sz,sz,0),Point(0,sz,0)});
-  box_planes[0].change_degrees(0,0,0);
-
-  box_planes[1] = Plane({Point(0,0,sz),Point(sz,0,sz),Point(sz,sz,sz),Point(0,sz,sz)});
-  box_planes[1].change_degrees(0,0,0);
-
-  box_planes[2] = Plane({Point(0,0,0),Point(0,0,sz),Point(0,sz,sz),Point(0,sz,0)});
-  box_planes[2].change_degrees(0,0,0);
-
-  box_planes[3] = Plane({Point(sz,0,0),Point(sz,0,sz),Point(sz,sz,sz),Point(sz,sz,0)});
-  box_planes[3].change_degrees(0,0,0);
-
-  box_planes[4] = Plane({Point(0,0,0),Point(sz,0,0),Point(sz,0,sz),Point(0,0,sz)});
-  box_planes[4].change_degrees(0,0,0);
-
-  box_planes[5] = Plane({Point(0,sz,0),Point(sz,sz,0),Point(sz,sz,sz),Point(0,sz,sz)});
-  box_planes[5].change_degrees(0,0,0);
-
-    for(auto&  pl: box_planes)
-    {
-      pl.x_degree += x_degree;
-      pl.y_degree += y_degree;
-      pl.z_degree += z_degree;
-
-      pl.update();
-    }
-}
 
 
 void
@@ -86,32 +59,17 @@ render()
 
       renderer.clear();
 
+
       renderer.render_dotset(dotset);
 
-    for(auto&  pl: box_planes)
-    {
-      constexpr Color  color(0x7F,0x7F,0x7F);
+      plane.render_wire(renderer);
 
-//      pl.render_face(renderer,color);
-      pl.render_texture(renderer,texture,Rect(64*0,0,64,64));
+      renderer.render_image(texture,nullptr,0,0,0);
 
-      pl.render_wire(renderer);
-    }
-
-
-
-
-if(0)
-{
-/*
-  printf("X: %3d Y: %3d Z: %3d\n",
-         (x_degree%360),
-         (y_degree%360),
-         (z_degree%360));
-*/
-}
+      renderer.render_dotset(nega_dotset);
 
       screen::put_renderer(renderer,0,0);
+
 
       screen::unlock();
       screen::update();
@@ -160,31 +118,32 @@ main_loop()
           case(SDLK_UP   ): if(shiting){z_degree += step;} else{y_degree += step;}break;
           case(SDLK_DOWN ): if(shiting){z_degree -= step;} else{y_degree -= step;}break;
           case(SDLK_SPACE):
-/*
-              x_degree = 315;
-              y_degree =  35;
-              z_degree =  30;
-*/
-flag=true;
+              flag = true;
               break;
           case(SDLK_1): screen::save_as_bmp();break;
             }
 
 
-          make_box();
-if(flag)
-{
-ctx_stack.clear();
-for(auto&  pl: box_planes)
-{
-  Color  color(rand(),rand(),rand());
+          plane = base_plane;
 
-  constexpr Rect  rect(64,64,64,64);
+          plane.x_degree += x_degree;
+          plane.y_degree += y_degree;
+          plane.z_degree += z_degree;
 
-  ctx_stack.emplace_back(pl.make_texture_rendering_context(0,texture,rect));
-  ctx_stack.emplace_back(pl.make_texture_rendering_context(1,texture,rect));
-}
-}
+          plane.update();
+
+            if(flag)
+            {
+                   dotset.clear();
+              nega_dotset.clear();
+
+              ctx_stack.clear();
+
+              constexpr Rect  rect(0,0,sz,sz);
+
+              ctx_stack.emplace_back(plane.make_texture_rendering_context(0,texture,rect));
+              ctx_stack.emplace_back(plane.make_texture_rendering_context(1,texture,rect));
+            }
         }
     }
 
@@ -201,13 +160,15 @@ auto  now = SDL_GetTicks();
       {
         auto&  ctx = ctx_stack.back();
 
-        int  n = 32;
+        int  n = 200;
 
           while(n--)
           {
             auto&  p = ctx.get_plotter();
+            auto&  m = ctx.get_mapper();
 
-            dotset.emplace_back(p.get_x(),p.get_y(),p.get_z(),ctx.get_color());
+                 dotset.emplace_back(p.get_x(), p.get_y(),p.get_z(),ctx.get_color());
+            nega_dotset.emplace_back(m.get_u(),-m.get_v(),        1,        Color());
 
               if(ctx.is_finished())
               {
@@ -242,26 +203,16 @@ main(int  argc, char**  argv)
 {
   screen::open();
 
-  texture.open("dice.png");
+  texture.open("lena_std.png");
 
-make_box();
+  base_plane.offset.assign(200,-400,0);
+
+  plane = base_plane;
+
+  plane.update();
+
+
   render();
-/*
-for(int  i = 0;  i <= 360;  i += 5)
-{
-printf("%10f,//%3d\n",std::sin(to_radian(i)),i);
-}
-
-
-printf("-----\n");
-
-for(int  i = 0;  i <= 360;  i += 5)
-{
-printf("%10f,//%3d\n",std::cos(to_radian(i)),i);
-}
-fflush(stdout);
-*/
-
 
 #ifdef EMSCRIPTEN
   emscripten_set_main_loop(main_loop,-1,false);

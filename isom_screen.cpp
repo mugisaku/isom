@@ -1,6 +1,7 @@
 #include"isom_screen.hpp"
 #include"isom_renderer.hpp"
 #include"isom_font.hpp"
+#include"isom_image.hpp"
 #include<SDL.h>
 #include<SDL_image.h>
 #include<vector>
@@ -254,16 +255,42 @@ put_renderer(const Renderer&  src, int  x, int  y, int  w, int  h)
     if(!h){h = src.get_height();}
 
 
-  auto  rend_h = src.get_height();
-
     for(int  yy = 0;  yy < h;  ++yy){
     for(int  xx = 0;  xx < w;  ++xx){
-//      auto&  cell = src.get_cell(x+xx,rend_h-y-1-yy);
       auto&  cell = src.get_cell(x+xx,y+yy);
 
       put_color(get_color(cell.r,cell.g,cell.b),xx,yy);
     }}
 }
+
+
+void
+put_image(const Image&  src, const Rect*  src_rect, int  dst_x, int  dst_y)
+{
+  Rect  tmp_rect;
+
+    if(!src_rect)
+    {
+      tmp_rect.x = 0;
+      tmp_rect.y = 0;
+      tmp_rect.w = src.get_width();
+      tmp_rect.h = src.get_height();
+
+      src_rect = &tmp_rect;
+    }
+
+
+  auto&  rect = *src_rect;
+
+    for(int  yy = 0;  yy < rect.h;  ++yy){
+    for(int  xx = 0;  xx < rect.w;  ++xx){
+      auto&  color = src.get_color(rect.x+xx,rect.y+yy);
+
+      put_color(get_color(color.r,color.g,color.b),dst_x+xx,dst_y+yy);
+    }}
+}
+
+
 
 
 void

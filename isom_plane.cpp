@@ -29,6 +29,11 @@ update()
   rotate_x();
   rotate_y();
   rotate_z();
+
+    for(int  i = 0;  i < 4;  ++i)
+    {
+      transformed_points[i] += offset;
+    }
 }
 
 
@@ -97,19 +102,29 @@ make_face_rendering_context(int  i, const Color&  color) const
 {
   auto&  pts = transformed_points;
 
-    if(i == 0){return FaceRenderingContext(color,pts[0],pts[1],pts[2]);}
-  else        {return FaceRenderingContext(color,pts[0],pts[2],pts[3]);}
+  using T = FaceRenderingContext;
+
+    if(i == 0){return T(color,pts[0],pts[1],pts[2]);}
+  else        {return T(color,pts[0],pts[2],pts[3]);}
 }
 
 
 TextureRenderingContext
 Plane::
-make_texture_rendering_context(int  i, const Image&  image) const
+make_texture_rendering_context(int  i, const Image&  image, const Rect&  rect) const
 {
   auto&  pts = transformed_points;
 
-    if(i == 0){return TextureRenderingContext(image,pts[0],pts[1],pts[2]);}
-  else        {return TextureRenderingContext(image,pts[0],pts[2],pts[3]);}
+  using CTX = TextureRenderingContext;
+  using   T = TextureVertex;
+
+  int     top = rect.y         ;
+  int  bottom = rect.y+rect.h-1;
+  int    left = rect.x         ;
+  int   right = rect.x+rect.w-1;
+
+    if(i == 0){return CTX(image,T(pts[0],left,top),T(pts[1],right,   top),T(pts[2],right,bottom));}
+  else        {return CTX(image,T(pts[0],left,top),T(pts[2],right,bottom),T(pts[3], left,bottom));}
 }
 
 
@@ -147,19 +162,13 @@ render_wire(Renderer&  dst) const
 
 void
 Plane::
-render_texture(Renderer&  dst, const Image&  img) const
+render_texture(Renderer&  dst, const Image&  img, const Rect&  rect) const
 {
-  auto&  pts = transformed_points;
+  auto  a = make_texture_rendering_context(0,img,rect);
+  auto  b = make_texture_rendering_context(1,img,rect);
 
-  using T = Point;
-
-  TextureRenderingContext  trctx(img,T(pts[0],0,0),T(pts[1],64, 0),T(pts[2], 0,64));
-
-  dst.render_texture(trctx);
-
-  trctx.reset(img,T(pts[0],0,0),T(pts[2],64,64),T(pts[3],64, 0));
-
-  dst.render_texture(trctx);
+  dst.render_texture(a);
+  dst.render_texture(b);
 }
 
 
