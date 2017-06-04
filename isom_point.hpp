@@ -13,9 +13,14 @@ Point
   value_type  x;
   value_type  y;
   value_type  z;
+  value_type  u;
+  value_type  v;
 
-  constexpr Point(value_type  x_=0, value_type  y_=0, value_type  z_=0):
-  x(x_), y(y_), z(z_){}
+  constexpr Point(value_type  x_=0, value_type  y_=0, value_type  z_=0, value_type  u_=0, value_type  v_=0):
+  x(x_), y(y_), z(z_), u(u_), v(v_){}
+
+  constexpr Point(const Point&  xyz, value_type  u_=0, value_type  v_=0):
+  x(xyz.x), y(xyz.y), z(xyz.z), u(u_), v(v_){}
 
 
   Point  operator+(const Point&  rhs) const;

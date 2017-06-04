@@ -5,16 +5,47 @@
 
 LineContext::
 LineContext(value_type  x0_, value_type  y0_, value_type  z0_,
-            value_type  x1_, value_type  y1_, value_type  z1_):
-x(x0_<<shift_amount),
-y(y0_<<shift_amount),
-z(z0_<<shift_amount),
-x0(x0_),y0(y0_),z0(z0_),
-x1(x1_),y1(y1_),z1(z1_),
-x_distance(std::abs(x1_-x0_)),
-y_distance(std::abs(y1_-y0_)),
-z_distance(std::abs(z1_-z0_))
+            value_type  x1_, value_type  y1_, value_type  z1_)
 {
+  initialize(x0_,y0_,z0_,x1_,y1_,z1_);
+}
+
+
+LineContext::
+LineContext(const Point&  a, const Point&  b)
+{
+  initialize(to_int(a.x),
+             to_int(a.y),
+             to_int(a.z),
+             to_int(b.x),
+             to_int(b.y),
+             to_int(b.z));
+}
+
+
+
+
+void
+LineContext::
+initialize(value_type  x0_, value_type  y0_, value_type  z0_,
+           value_type  x1_, value_type  y1_, value_type  z1_)
+{
+  x = (x0_<<shift_amount);
+  y = (y0_<<shift_amount);
+  z = (z0_<<shift_amount);
+
+  x0 = (x0_);
+  y0 = (y0_);
+  z0 = (z0_);
+
+  x1 = (x1_);
+  y1 = (y1_);
+  z1 = (z1_);
+
+  x_distance = (std::abs(x1_-x0_));
+  y_distance = (std::abs(y1_-y0_));
+  z_distance = (std::abs(z1_-z0_));
+
   distance = std::max(x_distance,std::max(y_distance,z_distance));
 
     if(distance)
@@ -54,8 +85,6 @@ z_distance(std::abs(z1_-z0_))
         if(z0 > z1){amount_of_add_to_z *= -1;}
     }
 }
-
-
 
 
 void

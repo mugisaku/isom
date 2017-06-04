@@ -6,7 +6,10 @@
 #include<vector>
 #include"isom_point.hpp"
 #include"isom_image.hpp"
+#include"isom_DotSet.hpp"
 #include"isom_LineContext.hpp"
+#include"isom_FaceRenderingContext.hpp"
+#include"isom_TextureRenderingContext.hpp"
 
 
 
@@ -24,18 +27,6 @@ Cell: public Color
 };
 
 
-struct
-TextureVertex: public  Point
-{
-  int  u;
-  int  v;
-
-  constexpr TextureVertex(const Point&  pt, int  u_=0, int  v_=0):
-  Point(pt), u(u_), v(v_){}
-
-};
-
-
 class
 Renderer
 {
@@ -45,7 +36,8 @@ Renderer
   int  height;
 
 public:
-  Point  offset;
+  int  x_offset=0;
+  int  y_offset=0;
 
   Renderer(int  w=0, int  h=0);
 
@@ -69,14 +61,13 @@ public:
         Cell&  get_cell(int  x, int  y)      ;
   const Cell&  get_cell(int  x, int  y) const;
 
-  void  render_line(const Point&  a, const Point&  b, const Color&  color);
-  void  render_polygon_line(LineContext&  longer, LineContext&  shorter, const Color&  color);
-  void  render_polygon(const Point&  a, const Point&  b, const Point&  c, const Color&  color);
+  void  put(const Color&  color, int  x, int  y, int  z);
+  void  put(const LineContext&  lc, const Color&  color);
 
-  void  render_texture_line(const Image&  img, const Point&  a, const Point&  b, const Point&  va, const Point&  vb);
-  void  render_texture_line(const Image&  img, LineContext&  longer    , LineContext&  shorter,
-                                               LineContext&  longer_vtx, LineContext&  shorter_vtx);
-  void  render_texture(const Image&  img, const TextureVertex&  a, const TextureVertex&  b, const TextureVertex&  c);
+  void  render_line(const Point&  p0, const Point&  p1, const Color&  color);
+  void  render_dotset(const DotSet&  dotset);
+  void  render_face(FaceRenderingContext&  ctx);
+  void  render_texture(TextureRenderingContext&  ctx);
 
 };
 

@@ -13,24 +13,18 @@
 struct
 Plane
 {
-  Point  base;
-
-  int  x_width;
-  int  y_width;
-
   int  x_degree;
   int  y_degree;
   int  z_degree;
 
-  Point  points[4];
+  Point              points[4];
+  Point  transformed_points[4];
 
   int  image_x;
   int  image_y;
 
-  constexpr Plane(const Point&  base_, int  x_width_, int  y_width_):
-  base(base_),
-  x_width(x_width_),
-  y_width(y_width_),
+  constexpr Plane(Point  p0=Point(), Point  p1=Point(), Point  p2=Point(), Point  p3=Point()):
+  points{p0,p1,p2,p3},
   x_degree(0),
   y_degree(0),
   z_degree(0),
@@ -38,13 +32,19 @@ Plane
   image_y(0){update();}
 
 
+  void  change_degrees(int  x, int  y, int  z);
+
   void  update();
   void  rotate_x();
   void  rotate_y();
   void  rotate_z();
 
-  void  render_face(Renderer&  dst) const;
+  FaceRenderingContext  make_face_rendering_context(int  i, const Color&  color) const;
+  TextureRenderingContext  make_texture_rendering_context(int  i, const Image&  image) const;
+
+  void  render_face(Renderer&  dst, const Color&  color) const;
   void  render_wire(Renderer&  dst) const;
+  void  render_texture(Renderer&  dst, const Image&  img) const;
 
 };
 

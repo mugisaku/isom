@@ -41,10 +41,11 @@ endif()
 
 set(SOURCES
   isom_LineContext.cpp
+  isom_FaceRenderingContext.cpp
+  isom_TextureRenderingContext.cpp
   isom_point.cpp
   isom_plane.cpp
   isom_renderer.cpp
-  isom_renderer__render.cpp
   isom_font.cpp
   isom_image.cpp
   isom_screen.cpp
@@ -54,7 +55,6 @@ set(SOURCES
 include_directories(.)
 include_directories(/usr/include/SDL2)
 add_executable("testMain${EXECUTABLE_EXTENSION}" test_main.cpp ${SOURCES})
-add_executable("testFillTriangle${EXECUTABLE_EXTENSION}" test__fill_triangle.cpp ${SOURCES})
 add_executable("testLineContext${EXECUTABLE_EXTENSION}" test__LineContext.cpp ${SOURCES})
 
 

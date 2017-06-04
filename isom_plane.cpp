@@ -8,23 +8,23 @@
 
 void
 Plane::
+change_degrees(int  x, int  y, int  z)
+{
+  x_degree = x;
+  y_degree = y;
+  z_degree = z;
+}
+
+
+void
+Plane::
 update()
 {
-  points[0].x = base.x;
-  points[0].y = base.y;
-  points[0].z = base.z;
+    for(int  i = 0;  i < 4;  ++i)
+    {
+      transformed_points[i] = points[i];
+    }
 
-  points[1].x = base.x;
-  points[1].y = base.y+y_width;
-  points[1].z = base.z;
-
-  points[2].x = base.x+x_width;
-  points[2].y = base.y+y_width;
-  points[2].z = base.z;
-
-  points[3].x = base.x+x_width;
-  points[3].y = base.y;
-  points[3].z = base.z;
 
   rotate_x();
   rotate_y();
@@ -32,16 +32,25 @@ update()
 }
 
 
+constexpr int
+to_index(int  degree)
+{
+  auto  d = degree%360;
+
+  return((d < 0)? d+360:d)/5;
+}
+
+
 void
 Plane::
 rotate_x()
 {
-  auto  rad = to_radian(x_degree);
+  auto  d = to_index(x_degree);
 
-  auto  sin_value = std::sin(rad);
-  auto  cos_value = std::cos(rad);
+  auto  sin_value = sin_value_table[d];
+  auto  cos_value = cos_value_table[d];
 
-    for(auto&  pt: points)
+    for(auto&  pt: transformed_points)
     {
       pt = pt.rotate_x(sin_value,cos_value);
     }
@@ -52,12 +61,12 @@ void
 Plane::
 rotate_y()
 {
-  auto  rad = to_radian(y_degree);
+  auto  d = to_index(y_degree);
 
-  auto  sin_value = std::sin(rad);
-  auto  cos_value = std::cos(rad);
+  auto  sin_value = sin_value_table[d];
+  auto  cos_value = cos_value_table[d];
 
-    for(auto&  pt: points)
+    for(auto&  pt: transformed_points)
     {
       pt = pt.rotate_y(sin_value,cos_value);
     }
@@ -68,24 +77,56 @@ void
 Plane::
 rotate_z()
 {
-  auto  rad = to_radian(z_degree);
+  auto  d = to_index(z_degree);
 
-  auto  sin_value = std::sin(rad);
-  auto  cos_value = std::cos(rad);
+  auto  sin_value = sin_value_table[d];
+  auto  cos_value = cos_value_table[d];
 
-    for(auto&  pt: points)
+    for(auto&  pt: transformed_points)
     {
       pt = pt.rotate_z(sin_value,cos_value);
     }
 }
 
 
+
+
+FaceRenderingContext
+Plane::
+make_face_rendering_context(int  i, const Color&  color) const
+{
+  auto&  pts = transformed_points;
+
+    if(i == 0){return FaceRenderingContext(color,pts[0],pts[1],pts[2]);}
+  else        {return FaceRenderingContext(color,pts[0],pts[2],pts[3]);}
+}
+
+
+TextureRenderingContext
+Plane::
+make_texture_rendering_context(int  i, const Image&  image) const
+{
+  auto&  pts = transformed_points;
+
+    if(i == 0){return TextureRenderingContext(image,pts[0],pts[1],pts[2]);}
+  else        {return TextureRenderingContext(image,pts[0],pts[2],pts[3]);}
+}
+
+
 void
 Plane::
-render_face(Renderer&  dst) const
+render_face(Renderer&  dst, const Color&  color) const
 {
-  dst.render_polygon(points[0],points[1],points[2],Color(0xFF,0xFF,0x00));
-  dst.render_polygon(points[0],points[2],points[3],Color(0xFF,0xFF,0x00));
+  auto&  pts = transformed_points;
+
+
+  FaceRenderingContext  frctx(color,pts[0],pts[1],pts[2]);
+
+  dst.render_face(frctx);
+
+  frctx.reset(color,pts[0],pts[2],pts[3]);
+
+  dst.render_face(frctx);
 }
 
 
@@ -95,10 +136,30 @@ render_wire(Renderer&  dst) const
 {
   constexpr Color  wire_color(0xFF,0xFF,0xFF);
 
-  dst.render_line(points[0],points[1],wire_color);
-  dst.render_line(points[1],points[2],wire_color);
-  dst.render_line(points[2],points[3],wire_color);
-  dst.render_line(points[3],points[0],wire_color);
+  auto&  pts = transformed_points;
+
+  dst.render_line(pts[0],pts[1],wire_color);
+  dst.render_line(pts[1],pts[2],wire_color);
+  dst.render_line(pts[2],pts[3],wire_color);
+  dst.render_line(pts[3],pts[0],wire_color);
+}
+
+
+void
+Plane::
+render_texture(Renderer&  dst, const Image&  img) const
+{
+  auto&  pts = transformed_points;
+
+  using T = Point;
+
+  TextureRenderingContext  trctx(img,T(pts[0],0,0),T(pts[1],64, 0),T(pts[2], 0,64));
+
+  dst.render_texture(trctx);
+
+  trctx.reset(img,T(pts[0],0,0),T(pts[2],64,64),T(pts[3],64, 0));
+
+  dst.render_texture(trctx);
 }
 
 

@@ -94,7 +94,7 @@ rotate_x(double  sin_value, double  cos_value) const
   value_type  ty = ( cos_value*y+sin_value*z);
   value_type  tz = (-sin_value*y+cos_value*z);
 
-  return Point(tx,ty,tz);
+  return Point(tx,ty,tz,u,v);
 }
 
 
@@ -106,7 +106,7 @@ rotate_y(double  sin_value, double  cos_value) const
   value_type  ty = (                       y);
   value_type  tz = (sin_value*x+ cos_value*z);
 
-  return Point(tx,ty,tz);
+  return Point(tx,ty,tz,u,v);
 }
 
 
@@ -118,7 +118,7 @@ rotate_z(double  sin_value, double  cos_value) const
   value_type  ty = (-sin_value*x+cos_value*y);
   value_type  tz = (                       z);
 
-  return Point(tx,ty,tz);
+  return Point(tx,ty,tz,u,v);
 }
 
 

@@ -107,3 +107,112 @@ get_cell(int  x, int  y) const
 
 
 
+void
+Renderer::
+put(const Color&  color, int  x, int  y, int  z)
+{
+  x += x_offset;
+  y += y_offset;
+
+    if(test(x,y))
+    {
+      auto&  cell = get_cell(x,y);
+
+        if(cell.z <= z)
+        {
+          cell.r = color.r;
+          cell.g = color.g;
+          cell.b = color.b;
+
+          cell.z = z;
+        }
+    }
+}
+
+
+void
+Renderer::
+put(const LineContext&  lc, const Color&  color)
+{
+  put(color,lc.get_x(),-lc.get_y(),lc.get_z());
+}
+
+
+void
+Renderer::
+render_line(const Point&  p0, const Point&  p1, const Color&  color)
+{
+  LineContext  lc(p0,p1);
+
+    for(;;)
+    {
+      put(lc,color);
+
+        if(lc.is_finished())
+        {
+          break;
+        }
+
+
+      lc.step();
+    }
+}
+
+
+void
+Renderer::
+render_dotset(const DotSet&  dotset)
+{
+    for(auto&  dot: dotset)
+    {
+      put(dot,dot.x,-dot.y,dot.z);
+    }
+}
+
+
+void
+Renderer::
+render_face(FaceRenderingContext&  ctx)
+{
+    for(;;)
+    {
+      auto&  p = ctx.get_plotter();
+
+      put(ctx.get_color(),p.get_x(),-p.get_y(),p.get_z());
+
+        if(ctx.is_finished())
+        {
+          break;
+        }
+
+
+      ctx.step();
+    }
+}
+
+
+void
+Renderer::
+render_texture(TextureRenderingContext&  ctx)
+{
+    for(;;)
+    {
+      auto&  p = ctx.get_plotter();
+      auto&  s = ctx.get_seeker();
+
+      put(ctx.get_color(),p.get_x(),-p.get_y(),p.get_z());
+
+        if(ctx.is_finished())
+        {
+          break;
+        }
+
+
+      ctx.step();
+    }
+}
+
+
+
+
+
