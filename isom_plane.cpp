@@ -8,88 +8,19 @@
 
 void
 Plane::
-change_degrees(int  x, int  y, int  z)
-{
-  x_degree = x;
-  y_degree = y;
-  z_degree = z;
-}
-
-
-void
-Plane::
 update()
 {
-    for(int  i = 0;  i < 4;  ++i)
-    {
-      transformed_points[i] = points[i];
-    }
-
-
-  rotate_x();
-  rotate_y();
-  rotate_z();
+  Rotater  r(angle);
 
     for(int  i = 0;  i < 4;  ++i)
     {
-      transformed_points[i] += offset;
-    }
-}
+      auto&  pt = transformed_points[i];
 
+      pt = points[i];
 
-constexpr int
-to_index(int  degree)
-{
-  auto  d = degree%360;
+      pt = r(pt,Point(64,64,0));
 
-  return((d < 0)? d+360:d)/5;
-}
-
-
-void
-Plane::
-rotate_x()
-{
-  auto  d = to_index(x_degree);
-
-  auto  sin_value = sin_value_table[d];
-  auto  cos_value = cos_value_table[d];
-
-    for(auto&  pt: transformed_points)
-    {
-      pt = pt.rotate_x(sin_value,cos_value);
-    }
-}
-
-
-void
-Plane::
-rotate_y()
-{
-  auto  d = to_index(y_degree);
-
-  auto  sin_value = sin_value_table[d];
-  auto  cos_value = cos_value_table[d];
-
-    for(auto&  pt: transformed_points)
-    {
-      pt = pt.rotate_y(sin_value,cos_value);
-    }
-}
-
-
-void
-Plane::
-rotate_z()
-{
-  auto  d = to_index(z_degree);
-
-  auto  sin_value = sin_value_table[d];
-  auto  cos_value = cos_value_table[d];
-
-    for(auto&  pt: transformed_points)
-    {
-      pt = pt.rotate_z(sin_value,cos_value);
+      pt += offset;
     }
 }
 

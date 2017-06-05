@@ -5,6 +5,8 @@
 #include"isom_math.hpp"
 
 
+
+
 struct
 Point
 {
@@ -26,13 +28,11 @@ Point
   Point&  operator-=(const Point&  rhs);
   Point&  operator*=(double  rate);
 
-  void  assign(int  x_, int  y_, int  z_);
+  void  assign(value_type  x_, value_type  y_, value_type  z_);
 
   void  print(const char*  s="") const;
 
-  Point  rotate_x(double  sin_value, double  cos_value) const;
-  Point  rotate_y(double  sin_value, double  cos_value) const;
-  Point  rotate_z(double  sin_value, double  cos_value) const;
+  Point  to_isometric_angle() const;
 
 };
 

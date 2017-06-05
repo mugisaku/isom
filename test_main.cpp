@@ -6,6 +6,7 @@
 #include"isom_point.hpp"
 #include"isom_plane.hpp"
 #include"isom_renderer.hpp"
+#include"isom_Scene.hpp"
 
 
 #ifdef EMSCRIPTEN
@@ -19,60 +20,32 @@ namespace{
 bool  needed_to_redraw = true;
 
 
-int  x_degree;
-int  y_degree;
-int  z_degree;
+Scene         base_scene;
+Scene  transformed_scene;
+
+
+constexpr int  sz = 320;
+
+
+Plane  backwall_plane(Point(0,0,0),Point(sz,0,0),Point(sz,sz,0),Point(0,0,0));
+Plane  leftwall_plane(Point(0,0,0),Point(sz,0,0),Point(sz,sz,0),Point(0,0,0));
+Plane  floor_plane(Point(0,0,0),Point(320,0,0),Point(320,0,320),Point(0,0,320));
+
 
 Renderer
 renderer(screen::width,screen::height);
 
 
-constexpr int  sz = 64;
-
 Image
 texture;
+
+
+Point  offset(200,-200,0);
 
 
 Plane  box_planes[6];
 
 
-DotSet
-dotset;
-
-std::vector<TextureRenderingContext>
-ctx_stack;
-
-
-void
-make_box()
-{
-  box_planes[0] = Plane({Point(0,0,0),Point(sz,0,0),Point(sz,sz,0),Point(0,sz,0)});
-  box_planes[0].change_degrees(0,0,0);
-
-  box_planes[1] = Plane({Point(0,0,sz),Point(sz,0,sz),Point(sz,sz,sz),Point(0,sz,sz)});
-  box_planes[1].change_degrees(0,0,0);
-
-  box_planes[2] = Plane({Point(0,0,0),Point(0,0,sz),Point(0,sz,sz),Point(0,sz,0)});
-  box_planes[2].change_degrees(0,0,0);
-
-  box_planes[3] = Plane({Point(sz,0,0),Point(sz,0,sz),Point(sz,sz,sz),Point(sz,sz,0)});
-  box_planes[3].change_degrees(0,0,0);
-
-  box_planes[4] = Plane({Point(0,0,0),Point(sz,0,0),Point(sz,0,sz),Point(0,0,sz)});
-  box_planes[4].change_degrees(0,0,0);
-
-  box_planes[5] = Plane({Point(0,sz,0),Point(sz,sz,0),Point(sz,sz,sz),Point(0,sz,sz)});
-  box_planes[5].change_degrees(0,0,0);
-
-    for(auto&  pl: box_planes)
-    {
-      pl.x_degree += x_degree;
-      pl.y_degree += y_degree;
-      pl.z_degree += z_degree;
-
-      pl.update();
-    }
-}
 
 
 void
@@ -86,19 +59,9 @@ render()
 
       renderer.clear();
 
-      renderer.render_dotset(dotset);
+      transformed_scene = base_scene.transform(Angle(315,35,30),Point(0,0,0));
 
-    for(auto&  pl: box_planes)
-    {
-      constexpr Color  color(0x7F,0x7F,0x7F);
-
-//      pl.render_face(renderer,color);
-      pl.render_texture(renderer,texture,Rect(64*0,0,64,64));
-
-      pl.render_wire(renderer);
-    }
-
-
+      transformed_scene.render(renderer);
 
 
 if(0)
@@ -155,77 +118,16 @@ main_loop()
 
             switch(evt.key.keysym.sym)
             {
-          case(SDLK_LEFT ):                                 {x_degree -= step;}break;
-          case(SDLK_RIGHT):                                 {x_degree += step;}break;
-          case(SDLK_UP   ): if(shiting){z_degree += step;} else{y_degree += step;}break;
-          case(SDLK_DOWN ): if(shiting){z_degree -= step;} else{y_degree -= step;}break;
+          case(SDLK_LEFT ):                                 {offset.x -= step;}break;
+          case(SDLK_RIGHT):                                 {offset.x += step;}break;
+          case(SDLK_UP   ): if(shiting){offset.z -= step;} else{offset.y += step;}break;
+          case(SDLK_DOWN ): if(shiting){offset.z += step;} else{offset.y -= step;}break;
           case(SDLK_SPACE):
-/*
-              x_degree = 315;
-              y_degree =  35;
-              z_degree =  30;
-*/
-flag=true;
               break;
           case(SDLK_1): screen::save_as_bmp();break;
             }
-
-
-          make_box();
-if(flag)
-{
-ctx_stack.clear();
-for(auto&  pl: box_planes)
-{
-  Color  color(rand(),rand(),rand());
-
-  constexpr Rect  rect(64,64,64,64);
-
-  ctx_stack.emplace_back(pl.make_texture_rendering_context(0,texture,rect));
-  ctx_stack.emplace_back(pl.make_texture_rendering_context(1,texture,rect));
-}
-}
         }
     }
-
-
-static uint32_t  last;
-
-auto  now = SDL_GetTicks();
-
-  if(now >= last+40)
-  {
-    last = now;
-
-      if(ctx_stack.size())
-      {
-        auto&  ctx = ctx_stack.back();
-
-        int  n = 32;
-
-          while(n--)
-          {
-            auto&  p = ctx.get_plotter();
-
-            dotset.emplace_back(p.get_x(),p.get_y(),p.get_z(),ctx.get_color());
-
-              if(ctx.is_finished())
-              {
-                ctx_stack.pop_back();
-
-                break;
-              }
-
-            else
-              {
-                ctx.step();
-              }
-          }
-
-
-        needed_to_redraw = true;
-      }
-  }
 
 
   render();
@@ -244,7 +146,6 @@ main(int  argc, char**  argv)
 
   texture.open("dice.png");
 
-make_box();
   render();
 /*
 for(int  i = 0;  i <= 360;  i += 5)

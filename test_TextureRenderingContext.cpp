@@ -19,10 +19,6 @@ namespace{
 bool  needed_to_redraw = true;
 
 
-int  x_degree;
-int  y_degree;
-int  z_degree;
-
 Renderer
 renderer(screen::width,screen::height);
 
@@ -111,12 +107,14 @@ main_loop()
 
           bool  shiting = (SDL_GetModState()&KMOD_SHIFT);
 
+          auto&  a = base_plane.angle;
+
             switch(evt.key.keysym.sym)
             {
-          case(SDLK_LEFT ):                                 {x_degree -= step;}break;
-          case(SDLK_RIGHT):                                 {x_degree += step;}break;
-          case(SDLK_UP   ): if(shiting){z_degree += step;} else{y_degree += step;}break;
-          case(SDLK_DOWN ): if(shiting){z_degree -= step;} else{y_degree -= step;}break;
+          case(SDLK_LEFT ):                                      {a.x_degree -= step;}break;
+          case(SDLK_RIGHT):                                      {a.x_degree += step;}break;
+          case(SDLK_UP   ): if(shiting){a.z_degree += step;} else{a.y_degree += step;}break;
+          case(SDLK_DOWN ): if(shiting){a.z_degree -= step;} else{a.y_degree -= step;}break;
           case(SDLK_SPACE):
               flag = true;
               break;
@@ -125,10 +123,6 @@ main_loop()
 
 
           plane = base_plane;
-
-          plane.x_degree += x_degree;
-          plane.y_degree += y_degree;
-          plane.z_degree += z_degree;
 
           plane.update();
 
