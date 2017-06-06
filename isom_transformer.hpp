@@ -59,11 +59,21 @@ public:
   Transformer();
 
   void  change_angle(int  x, int  y, int  z);
+  void  change_angle(const Angle&  a){change_angle(a.x_degree,a.y_degree,a.z_degree);}
 
   void  change_scaling_rate(double  x, double  y, double  z);
 
   void  change_center(double  x, double  y, double  z);
   void  change_offset(double  x, double  y, double  z);
+
+  void  change_center(const Point&  pt){change_center(pt.x,pt.y,pt.z);}
+  void  change_offset(const Point&  pt){change_offset(pt.x,pt.y,pt.z);}
+
+
+  const Angle&  get_antle()  const{return  angle;}
+  const Point&  get_offset() const{return offset;}
+  const Point&  get_center() const{return center;}
+
 
   void  set_translation_flag(){flags |= translation_flag;}
   void  set_scaling_flag()    {flags |=     scaling_flag;}

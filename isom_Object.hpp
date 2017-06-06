@@ -64,6 +64,7 @@ public:
   Object();
   Object(Dot&&            dt);
   Object(DotSet&&       dtst);
+  Object(Line&&           ln);
   Object(Plane&&          pl);
   Object(ObjectList&&  objls);
   Object(const Object&   rhs) noexcept;

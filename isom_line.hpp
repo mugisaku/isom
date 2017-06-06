@@ -12,6 +12,9 @@ Line
   Dot  a;
   Dot  b;
 
+  Line();
+  Line(const Dot&  a_, const Dot&  b_): a(a_), b(b_){}
+
   void  transform(const Transformer&  tr);
 
   void  render(Renderer&  dst) const;

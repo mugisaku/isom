@@ -27,7 +27,7 @@ public:
   void  push(T&&  t){object_list.emplace_back(std::move(t));}
 
 
-  Scene  transform(const Transformer&  tr) const;
+  void  transform(const Transformer&  tr);
 
   void  render(Renderer&  dst) const;
 

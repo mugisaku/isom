@@ -7,6 +7,7 @@
 #include"isom_plane.hpp"
 #include"isom_renderer.hpp"
 #include"isom_Scene.hpp"
+#include<random>
 
 
 #ifdef EMSCRIPTEN
@@ -20,11 +21,14 @@ namespace{
 bool  needed_to_redraw = true;
 
 
-Scene         base_scene;
-Scene  transformed_scene;
+Scene  base_scene;
 
 
 constexpr int  sz = 320;
+
+
+std::default_random_engine  eng;
+std::uniform_real_distribution<>  dist(0,255);
 
 
 Renderer
@@ -35,7 +39,7 @@ Image
 texture;
 
 
-Point  offset(200,-200,0);
+Transformer  tr;
 
 
 Plane  box_planes[6];
@@ -55,28 +59,18 @@ render()
       renderer.clear();
 
        
+      auto  scene = base_scene;
 
-      Rotater  r(Angle(315,35,30),Point(0,0,0));
+      scene.transform(tr);
 
-      transformed_scene = base_scene.transform(r);
+      scene.render(renderer);
 
-      transformed_scene.render(renderer);
-
-
-if(0)
-{
-/*
-  printf("X: %3d Y: %3d Z: %3d\n",
-         (x_degree%360),
-         (y_degree%360),
-         (z_degree%360));
-*/
-}
 
       screen::put_renderer(renderer,0,0);
 
       screen::unlock();
       screen::update();
+
 
       needed_to_redraw = false;
     }
@@ -109,22 +103,38 @@ main_loop()
       case(SDL_KEYDOWN):
           needed_to_redraw = true;
 
-          constexpr double  step = 5;
+          constexpr double  step = 25;
 
           bool  flag = false;
 
           bool  shiting = (SDL_GetModState()&KMOD_SHIFT);
 
+          auto  o = tr.get_offset();
+
             switch(evt.key.keysym.sym)
             {
-          case(SDLK_LEFT ):                                 {offset.x -= step;}break;
-          case(SDLK_RIGHT):                                 {offset.x += step;}break;
-          case(SDLK_UP   ): if(shiting){offset.z -= step;} else{offset.y += step;}break;
-          case(SDLK_DOWN ): if(shiting){offset.z += step;} else{offset.y -= step;}break;
+          case(SDLK_LEFT ):                               {o.x -= step;}break;
+          case(SDLK_RIGHT):                               {o.x += step;}break;
+          case(SDLK_UP   ): if(shiting){o.z -= step;} else{o.y += step;}break;
+          case(SDLK_DOWN ): if(shiting){o.z += step;} else{o.y -= step;}break;
           case(SDLK_SPACE):
+for(int  n = 0;  n < 100;  ++n)
+{
+Object  o(
+Line(
+Dot(Point(dist(eng),dist(eng),dist(eng)),Color(dist(eng),dist(eng),dist(eng))),
+Dot(Point(dist(eng),dist(eng),dist(eng)),Color(dist(eng),dist(eng),dist(eng)))
+));
+
+
+  base_scene.push(o);
+}
               break;
           case(SDLK_1): screen::save_as_bmp();break;
             }
+
+
+          tr.change_offset(o);
         }
     }
 
@@ -148,6 +158,14 @@ main(int  argc, char**  argv)
   Plane  backwall_plane(Point(0,0,0),Point(sz,0,0),Point(sz,sz,0),Point(0,0,0));
   Plane  leftwall_plane(Point(0,0,0),Point(sz,0,0),Point(sz,sz,0),Point(0,0,0));
   Plane  floor_plane(Point(0,0,0),Point(320,0,0),Point(320,0,320),Point(0,0,320));
+
+  std::random_device  rdev;
+
+  eng = std::default_random_engine(rdev());
+
+  tr.change_offset(200,-200,0);
+
+  tr.set_translation_flag();
 
   base_scene.push(std::move(backwall_plane));
   base_scene.push(std::move(leftwall_plane));

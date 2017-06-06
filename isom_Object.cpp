@@ -7,6 +7,7 @@
 Object::Object(): kind(ObjectKind::null){}
 Object::Object(Dot&&            dt): kind(ObjectKind::dot        ){new(&data) Dot(std::move(dt));}
 Object::Object(DotSet&&       dtst): kind(ObjectKind::dotset     ){new(&data) DotSet(std::move(dtst));}
+Object::Object(Line&&           ln): kind(ObjectKind::line       ){new(&data) Line(std::move(ln));}
 Object::Object(Plane&&          pl): kind(ObjectKind::plane      ){new(&data) Plane(std::move(pl));}
 Object::Object(ObjectList&&  objls): kind(ObjectKind::object_list){new(&data) ObjectList(std::move(objls));}
 Object::Object(const Object&   rhs) noexcept: kind(ObjectKind::null){*this = rhs;}

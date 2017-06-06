@@ -23,21 +23,14 @@ object_list(std::move(ls))
 
 
 
-Scene
+void
 Scene::
-transform(const Transformer&  tr) const
+transform(const Transformer&  tr)
 {
-  Scene  scn;
-
     for(auto&  obj: object_list)
     {
-      scn.object_list.emplace_back(obj);
-
-      scn.object_list.back().transform(tr);
+      obj.transform(tr);
     }
-
-
-  return std::move(scn);
 }
 
 

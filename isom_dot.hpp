@@ -16,8 +16,8 @@ Dot
   Point  point;
   Color  color;
 
-  constexpr Dot(int  x_, int  y_, int  z_, const Color&  color_):
-  point(x_,y_,z_),
+  constexpr Dot(const Point&  point_, const Color&  color_):
+  point(point_),
   color(color_){}
 
   void  transform(const Transformer&  tr);
