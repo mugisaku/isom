@@ -6,7 +6,6 @@
 #include<vector>
 #include"isom_point.hpp"
 #include"isom_image.hpp"
-#include"isom_DotSet.hpp"
 #include"isom_LineContext.hpp"
 #include"isom_FaceRenderingContext.hpp"
 #include"isom_TextureRenderingContext.hpp"
@@ -62,7 +61,6 @@ public:
   void  put(const LineContext&  lc, const Color&  color);
 
   void  render_line(const Point&  p0, const Point&  p1, const Color&  color);
-  void  render_dotset(const DotSet&  dotset);
   void  render_face(FaceRenderingContext&  ctx);
   void  render_texture(TextureRenderingContext&  ctx);
   void  render_image(const Image&  src, const Rect*  src_rect, int  src_z, int  dst_x, int  dst_y);

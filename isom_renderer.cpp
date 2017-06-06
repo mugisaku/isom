@@ -160,17 +160,6 @@ render_line(const Point&  p0, const Point&  p1, const Color&  color)
 
 void
 Renderer::
-render_dotset(const DotSet&  dotset)
-{
-    for(auto&  dot: dotset)
-    {
-      put(dot,dot.x,dot.y,dot.z);
-    }
-}
-
-
-void
-Renderer::
 render_face(FaceRenderingContext&  ctx)
 {
     for(;;)

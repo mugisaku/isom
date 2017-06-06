@@ -2,26 +2,27 @@
 #define ISOM_DotSet_HPP_INCLUDED
 
 
-#include"isom_image.hpp"
+#include"isom_dot.hpp"
 
 
 
 
 struct
-Dot: public Color
+DotSet
 {
-  int  x;
-  int  y;
-  int  z;
+  using List = std::vector<Dot>;
 
-  constexpr Dot(int  x_, int  y_, int  z_, const Color&  color):
-  x(x_), y(y_), z(z_),
-  Color(color){}
+  List  dot_list;
+
+
+  List&  operator *(){return  dot_list;}
+  List*  operator->(){return &dot_list;}
+
+  void  transform(const Transformer&  tr);
+
+  void  render(Renderer&  dst) const;
 
 };
-
-
-using DotSet = std::vector<Dot>;
 
 
 

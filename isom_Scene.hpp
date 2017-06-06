@@ -8,6 +8,7 @@
 #include"isom_image.hpp"
 #include"isom_plane.hpp"
 #include"isom_Object.hpp"
+#include"isom_transformer.hpp"
 #include<list>
 
 
@@ -18,14 +19,15 @@ Scene
 {
   std::list<Object>  object_list;
 
-  Angle   angle;
-  Point  center;
-
 public:
   Scene();
-  Scene(const Angle  angle_, const Point&  center_, std::list<Object>&&  ls);
+  Scene(std::list<Object>&&  ls);
 
-  Scene  transform(const Angle  angle_, const Point&  center_) const;
+  template<typename  T>
+  void  push(T&&  t){object_list.emplace_back(std::move(t));}
+
+
+  Scene  transform(const Transformer&  tr) const;
 
   void  render(Renderer&  dst) const;
 

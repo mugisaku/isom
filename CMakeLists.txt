@@ -45,7 +45,10 @@ set(SOURCES
   isom_TextureMappingContext.cpp
   isom_TextureRenderingContext.cpp
   isom_point.cpp
-  isom_rotater.cpp
+  isom_transformer.cpp
+  isom_dot.cpp
+  isom_DotSet.cpp
+  isom_line.cpp
   isom_plane.cpp
   isom_Object.cpp
   isom_Scene.cpp

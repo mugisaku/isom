@@ -27,11 +27,6 @@ Scene  transformed_scene;
 constexpr int  sz = 320;
 
 
-Plane  backwall_plane(Point(0,0,0),Point(sz,0,0),Point(sz,sz,0),Point(0,0,0));
-Plane  leftwall_plane(Point(0,0,0),Point(sz,0,0),Point(sz,sz,0),Point(0,0,0));
-Plane  floor_plane(Point(0,0,0),Point(320,0,0),Point(320,0,320),Point(0,0,320));
-
-
 Renderer
 renderer(screen::width,screen::height);
 
@@ -59,7 +54,11 @@ render()
 
       renderer.clear();
 
-      transformed_scene = base_scene.transform(Angle(315,35,30),Point(0,0,0));
+       
+
+      Rotater  r(Angle(315,35,30),Point(0,0,0));
+
+      transformed_scene = base_scene.transform(r);
 
       transformed_scene.render(renderer);
 
@@ -145,6 +144,14 @@ main(int  argc, char**  argv)
   screen::open();
 
   texture.open("dice.png");
+
+  Plane  backwall_plane(Point(0,0,0),Point(sz,0,0),Point(sz,sz,0),Point(0,0,0));
+  Plane  leftwall_plane(Point(0,0,0),Point(sz,0,0),Point(sz,sz,0),Point(0,0,0));
+  Plane  floor_plane(Point(0,0,0),Point(320,0,0),Point(320,0,320),Point(0,0,320));
+
+  base_scene.push(std::move(backwall_plane));
+  base_scene.push(std::move(leftwall_plane));
+  base_scene.push(std::move(   floor_plane));
 
   render();
 /*

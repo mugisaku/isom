@@ -31,7 +31,10 @@ texture;
 
 
 Plane  base_plane(Point(0,sz,0),Point(sz,sz,0),Point(sz,0,0),Point(0,0,0));
-Plane       plane;
+Plane  plane;
+
+
+Transformer  tr;
 
 
 DotSet
@@ -56,13 +59,17 @@ render()
       renderer.clear();
 
 
-      renderer.render_dotset(dotset);
+      dotset.render(renderer);
+
+      plane = base_plane;
+
+      plane.transform(tr);
 
       plane.render_wire(renderer);
 
       renderer.render_image(texture,nullptr,0,0,0);
 
-      renderer.render_dotset(nega_dotset);
+      nega_dotset.render(renderer);
 
       screen::put_renderer(renderer,0,0);
 
@@ -107,7 +114,7 @@ main_loop()
 
           bool  shiting = (SDL_GetModState()&KMOD_SHIFT);
 
-          auto&  a = base_plane.angle;
+          static Angle  a;
 
             switch(evt.key.keysym.sym)
             {
@@ -122,14 +129,12 @@ main_loop()
             }
 
 
-          plane = base_plane;
-
-          plane.update();
+          tr.change_angle(a.x_degree,a.y_degree,a.z_degree);
 
             if(flag)
             {
-                   dotset.clear();
-              nega_dotset.clear();
+                   dotset->clear();
+              nega_dotset->clear();
 
               ctx_stack.clear();
 
@@ -161,8 +166,8 @@ auto  now = SDL_GetTicks();
             auto&  p = ctx.get_plotter();
             auto&  m = ctx.get_mapper();
 
-                 dotset.emplace_back(p.get_x(), p.get_y(),p.get_z(),ctx.get_color());
-            nega_dotset.emplace_back(m.get_u(),-m.get_v(),        1,        Color());
+                 dotset->emplace_back(p.get_x(), p.get_y(),p.get_z(),ctx.get_color());
+            nega_dotset->emplace_back(m.get_u(),-m.get_v(),        1,        Color());
 
               if(ctx.is_finished())
               {
@@ -199,12 +204,10 @@ main(int  argc, char**  argv)
 
   texture.open("lena_std.png");
 
-  base_plane.offset.assign(200,-400,0);
+  tr.set_translation_flag();
+  tr.set_rotation_flag();
 
-  plane = base_plane;
-
-  plane.update();
-
+  tr.change_offset(200,-400,0);
 
   render();
 
