@@ -7,13 +7,13 @@
 #include"isom_point.hpp"
 #include"isom_image.hpp"
 #include"isom_LineContext.hpp"
-#include"isom_FaceRenderingContext.hpp"
 #include"isom_TextureRenderingContext.hpp"
 
 
 
 
 struct Plane;
+struct FaceRenderingContext;
 
 
 struct

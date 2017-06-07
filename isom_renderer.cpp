@@ -1,4 +1,5 @@
 #include"isom_renderer.hpp"
+#include"isom_FaceRenderingContext.hpp"
 
 
 
@@ -166,7 +167,7 @@ render_face(FaceRenderingContext&  ctx)
     {
       auto&  p = ctx.get_plotter();
 
-      put(ctx.get_color(),p.get_x(),p.get_y(),p.get_z());
+//      put(ctx.get_color(),p.get_x(),p.get_y(),p.get_z());
 
         if(ctx.is_finished())
         {

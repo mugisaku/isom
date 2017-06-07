@@ -4,9 +4,9 @@
 
 
 FaceRenderingContext::
-FaceRenderingContext(const Color&  color, const Point&  a, const Point&  b, const Point&  c)
+FaceRenderingContext(const Dot&  a, const Dot&  b, const Dot&  c)
 {
-  reset(color,a,b,c);
+  reset(a,b,c);
 }
 
 
@@ -14,19 +14,21 @@ FaceRenderingContext(const Color&  color, const Point&  a, const Point&  b, cons
 
 void
 FaceRenderingContext::
-reset(const Color&  color_, const Point&  a, const Point&  b, const Point&  c)
+reset(const Dot&  a, const Dot&  b, const Dot&  c)
 {
-  auto&     top = ::upper(a,::upper(b,c));
-  auto&  bottom = ::lower(a,::lower(b,c));
+  auto&     top = static_cast<const Dot&>(::upper(a,::upper(b,c)));
+  auto&  bottom = static_cast<const Dot&>(::lower(a,::lower(b,c)));
 
-  auto&  middle = ((&a != &top) && (&a != &bottom))? a:
-                  ((&b != &top) && (&b != &bottom))? b:c;
-
-  color = (color_);
+  auto&  middle = static_cast<const Dot&>(((&a != &top) && (&a != &bottom))? a:
+                                          ((&b != &top) && (&b != &bottom))? b:c);
 
   longer = LineContext(top,bottom);
    upper = LineContext(top,middle);
    lower = LineContext(middle,bottom);
+
+  longer_color = LineContext(   top.color,bottom.color,longer.get_distance());
+   upper_color = LineContext(   top.color,middle.color, upper.get_distance());
+   lower_color = LineContext(middle.color,bottom.color, lower.get_distance());
 
   phase = 1;
 
@@ -34,6 +36,16 @@ reset(const Color&  color_, const Point&  a, const Point&  b, const Point&  c)
 }
 
 
+
+
+Color
+FaceRenderingContext::
+get_color() const
+{
+  return Color(final_color.get_r(),
+               final_color.get_g(),
+               final_color.get_b(),255);
+}
 
 
 void
@@ -51,13 +63,15 @@ step_line()
 
       else
         {
-          longer.step();
+                longer.step();
+          longer_color.step();
         }
     }
 
   else
     {
-      plotter.step();
+          plotter.step();
+      final_color.step();
     }
 }
 
@@ -77,7 +91,8 @@ step()
     {
       int  y = longer.get_y();
 
-      LineContext&  shorter = ((phase == 1)? upper:lower);
+      LineContext&  shorter       = ((phase == 1)? upper      :lower      );
+      LineContext&  shorter_color = ((phase == 1)? upper_color:lower_color);
 
         while(shorter.get_y() > y)
         {
@@ -98,12 +113,16 @@ step()
             }
 
 
-          shorter.step();
+                shorter.step();
+          shorter_color.step();
         }
 
 
       plotter = LineContext( longer.get_x(),y, longer.get_z(),
                             shorter.get_x(),y,shorter.get_z());
+
+      final_color = LineContext( longer_color.get_r(), longer_color.get_g(), longer_color.get_b(),
+                                shorter_color.get_r(),shorter_color.get_g(),shorter_color.get_b(),plotter.get_distance());
 
       plotting_now = true;
     }

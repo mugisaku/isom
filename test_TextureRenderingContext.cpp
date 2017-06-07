@@ -167,7 +167,7 @@ auto  now = SDL_GetTicks();
             auto&  m = ctx.get_mapper();
 
                  dotset->emplace_back(Point(p.get_x(), p.get_y(),p.get_z()),ctx.get_color());
-            nega_dotset->emplace_back(Point(m.get_u(),-m.get_v(),        1),        Color());
+            nega_dotset->emplace_back(Point(m.get_x(),-m.get_y(),        1),        Color());
 
               if(ctx.is_finished())
               {

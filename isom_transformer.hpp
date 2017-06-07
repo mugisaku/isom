@@ -70,7 +70,7 @@ public:
   void  change_offset(const Point&  pt){change_offset(pt.x,pt.y,pt.z);}
 
 
-  const Angle&  get_antle()  const{return  angle;}
+  const Angle&  get_angle()  const{return  angle;}
   const Point&  get_offset() const{return offset;}
   const Point&  get_center() const{return center;}
 

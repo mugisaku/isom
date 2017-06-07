@@ -6,17 +6,6 @@
 
 
 
-FaceRenderingContext
-Plane::
-make_face_rendering_context(int  i, const Color&  color) const
-{
-  using T = FaceRenderingContext;
-
-    if(i == 0){return T(color,points[0],points[1],points[2]);}
-  else        {return T(color,points[0],points[2],points[3]);}
-}
-
-
 TextureRenderingContext
 Plane::
 make_texture_rendering_context(int  i, const Image&  image, const Rect&  rect) const
@@ -59,6 +48,7 @@ void
 Plane::
 render_face(Renderer&  dst, const Color&  color) const
 {
+/*
   FaceRenderingContext  frctx(color,points[0],points[1],points[2]);
 
   dst.render_face(frctx);
@@ -66,6 +56,7 @@ render_face(Renderer&  dst, const Color&  color) const
   frctx.reset(color,points[0],points[2],points[3]);
 
   dst.render_face(frctx);
+*/
 }
 
 

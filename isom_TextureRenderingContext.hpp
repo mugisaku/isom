@@ -3,7 +3,6 @@
 
 
 #include"isom_LineContext.hpp"
-#include"isom_TextureMappingContext.hpp"
 #include"isom_image.hpp"
 
 
@@ -34,11 +33,11 @@ TextureRenderingContext
 
   LineContext  plotter;
 
-  TextureMappingContext  longer_mapper;
-  TextureMappingContext   upper_mapper;
-  TextureMappingContext   lower_mapper;
+  LineContext  longer_mapper;
+  LineContext   upper_mapper;
+  LineContext   lower_mapper;
 
-  TextureMappingContext  final_mapper;
+  LineContext  final_mapper;
 
   int  phase;
 
@@ -55,7 +54,7 @@ public:
 
   const Image&  get_image() const{return *image;}
 
-  const TextureMappingContext&  get_mapper() const{return final_mapper;}
+  const LineContext&  get_mapper() const{return final_mapper;}
 
   const Color&  get_color() const;
 

@@ -1,9 +1,9 @@
 #ifndef ISOM_FaceRenderingContext_HPP_INCLUDED
-#define ISOM_FacerRenderingContext_HPP_INCLUDED
+#define ISOM_FaceRenderingContext_HPP_INCLUDED
 
 
 #include"isom_LineContext.hpp"
-#include"isom_image.hpp"
+#include"isom_dot.hpp"
 
 
 
@@ -11,15 +11,14 @@
 class
 FaceRenderingContext
 {
-  Color  color;
-
   LineContext  longer;
   LineContext   upper;
   LineContext   lower;
 
-  LineContext  longer_vtx;
-  LineContext   upper_vtx;
-  LineContext   lower_vtx;
+  LineContext  longer_color;
+  LineContext   upper_color;
+  LineContext   lower_color;
+  LineContext   final_color;
 
   LineContext  plotter;
 
@@ -30,11 +29,11 @@ FaceRenderingContext
   void  step_line();
 
 public:
-  FaceRenderingContext(const Color&  color, const Point&  a, const Point&  b, const Point&  c);
+  FaceRenderingContext(const Dot&  a, const Dot&  b, const Dot&  c);
 
-  void  reset(const Color&  color, const Point&  a, const Point&  b, const Point&  c);
+  void  reset(const Dot&  a, const Dot&  b, const Dot&  c);
 
-  const Color&  get_color() const{return color;}
+  Color  get_color() const;
 
   const LineContext&  get_plotter() const{return plotter;}
 

@@ -11,7 +11,6 @@
 #include"isom_dot.hpp"
 #include"isom_DotSet.hpp"
 #include"isom_line.hpp"
-#include"isom_triangle.hpp"
 #include"isom_polygon.hpp"
 #include<list>
 
@@ -25,7 +24,8 @@ ObjectKind
   dot,
   dotset,
   line,
-  triangle,
+  polygon,
+  textured_polygon,
   plane,
   object_list,
 
@@ -66,6 +66,7 @@ public:
   Object(DotSet&&       dtst);
   Object(Line&&           ln);
   Object(Plane&&          pl);
+  Object(Polygon&&        po);
   Object(ObjectList&&  objls);
   Object(const Object&   rhs) noexcept;
   Object(      Object&&  rhs) noexcept;

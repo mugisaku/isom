@@ -22,13 +22,14 @@ bool  needed_to_redraw = true;
 
 
 Scene  base_scene;
+Scene  c_scene;
 
 
 constexpr int  sz = 320;
 
 
 std::default_random_engine  eng;
-std::uniform_real_distribution<>  dist(0,255);
+std::uniform_real_distribution<>  dist(-100,100);
 
 
 Renderer
@@ -103,38 +104,39 @@ main_loop()
       case(SDL_KEYDOWN):
           needed_to_redraw = true;
 
-          constexpr double  step = 25;
+          constexpr double  step = 5;
 
           bool  flag = false;
 
           bool  shiting = (SDL_GetModState()&KMOD_SHIFT);
 
-          auto  o = tr.get_offset();
+          auto  o = tr.get_angle();
 
             switch(evt.key.keysym.sym)
             {
-          case(SDLK_LEFT ):                               {o.x -= step;}break;
-          case(SDLK_RIGHT):                               {o.x += step;}break;
-          case(SDLK_UP   ): if(shiting){o.z -= step;} else{o.y += step;}break;
-          case(SDLK_DOWN ): if(shiting){o.z += step;} else{o.y -= step;}break;
+          case(SDLK_LEFT ):                               {o.x_degree -= step;}break;
+          case(SDLK_RIGHT):                               {o.x_degree += step;}break;
+          case(SDLK_UP   ): if(shiting){o.z_degree -= step;} else{o.y_degree += step;}break;
+          case(SDLK_DOWN ): if(shiting){o.z_degree += step;} else{o.y_degree -= step;}break;
           case(SDLK_SPACE):
-for(int  n = 0;  n < 100;  ++n)
+//for(int  n = 0;  n < 10;  ++n)
 {
 Object  o(
-Line(
-Dot(Point(dist(eng),dist(eng),dist(eng)),Color(dist(eng),dist(eng),dist(eng))),
-Dot(Point(dist(eng),dist(eng),dist(eng)),Color(dist(eng),dist(eng),dist(eng)))
+Polygon(
+Dot(Point(dist(eng),dist(eng),dist(eng)),Color(0xFF,0xFF,0xFF,0xFF)),
+Dot(Point(dist(eng),dist(eng),dist(eng)),Color(0xFF,0,0,0xFF)),
+Dot(Point(dist(eng),dist(eng),dist(eng)),Color(0xFF,0xFF,0xFF,0xFF))
 ));
 
 
-  base_scene.push(o);
+  base_scene.push(std::move(o));
 }
               break;
           case(SDLK_1): screen::save_as_bmp();break;
             }
 
 
-          tr.change_offset(o);
+          tr.change_angle(o);
         }
     }
 
@@ -166,6 +168,7 @@ main(int  argc, char**  argv)
   tr.change_offset(200,-200,0);
 
   tr.set_translation_flag();
+  tr.set_rotation_flag();
 
   base_scene.push(std::move(backwall_plane));
   base_scene.push(std::move(leftwall_plane));

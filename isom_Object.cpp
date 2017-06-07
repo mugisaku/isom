@@ -9,6 +9,7 @@ Object::Object(Dot&&            dt): kind(ObjectKind::dot        ){new(&data) Do
 Object::Object(DotSet&&       dtst): kind(ObjectKind::dotset     ){new(&data) DotSet(std::move(dtst));}
 Object::Object(Line&&           ln): kind(ObjectKind::line       ){new(&data) Line(std::move(ln));}
 Object::Object(Plane&&          pl): kind(ObjectKind::plane      ){new(&data) Plane(std::move(pl));}
+Object::Object(Polygon&&        po): kind(ObjectKind::polygon    ){new(&data) Polygon(std::move(po));}
 Object::Object(ObjectList&&  objls): kind(ObjectKind::object_list){new(&data) ObjectList(std::move(objls));}
 Object::Object(const Object&   rhs) noexcept: kind(ObjectKind::null){*this = rhs;}
 Object::Object(      Object&&  rhs) noexcept: kind(ObjectKind::null){*this = std::move(rhs);}
@@ -47,6 +48,9 @@ operator=(const Object&   rhs) noexcept
   case(ObjectKind::plane):
       new(&data) Plane(rhs.data.plane);
       break;
+  case(ObjectKind::polygon):
+      new(&data) Polygon(rhs.data.polygon);
+      break;
   case(ObjectKind::object_list):
       new(&data) ObjectList(rhs.data.object_list);
       break;
@@ -78,6 +82,9 @@ operator=(Object&&  rhs) noexcept
   case(ObjectKind::plane):
       new(&data) Plane(std::move(rhs.data.plane));
       break;
+  case(ObjectKind::polygon):
+      new(&data) Polygon(std::move(rhs.data.polygon));
+      break;
   case(ObjectKind::object_list):
       new(&data) ObjectList(std::move(rhs.data.object_list));
       break;
@@ -106,6 +113,9 @@ clear()
       break;
   case(ObjectKind::plane):
       data.plane.~Plane();
+      break;
+  case(ObjectKind::polygon):
+      data.polygon.~Polygon();
       break;
   case(ObjectKind::object_list):
       data.object_list.~list();
@@ -139,6 +149,9 @@ transform(const Transformer&  tr)
   case(ObjectKind::plane):
       data.plane.transform(tr);
       break;
+  case(ObjectKind::polygon):
+      data.polygon.transform(tr);
+      break;
   case(ObjectKind::object_list):
         for(auto&  obj: data.object_list)
         {
@@ -168,6 +181,9 @@ render(Renderer&  dst) const
       break;
   case(ObjectKind::plane):
       data.plane.render(dst);
+      break;
+  case(ObjectKind::polygon):
+      data.polygon.render(dst);
       break;
   case(ObjectKind::object_list):
         for(auto&  obj: data.object_list)

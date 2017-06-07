@@ -20,7 +20,6 @@ Plane
   points{p0,p1,p2,p3}{}
 
 
-  FaceRenderingContext  make_face_rendering_context(int  i, const Color&  color) const;
   TextureRenderingContext  make_texture_rendering_context(int  i, const Image&  image, const Rect&  rect) const;
 
   void  transform(const Transformer&  tr);

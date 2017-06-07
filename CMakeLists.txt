@@ -1,9 +1,15 @@
 cmake_minimum_required(VERSION 2.8)
 
 
+if(DEFINED SLEEPING_TIME)
+else()
+  set(SLEEPING_TIME "0")
+endif()
+
+
 find_program(CCACHE_FOUND ccache)
 if(CCACHE_FOUND)
-  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "  sleep 1;  CCACHE_DIR=/tmp/ccachedir ccache")
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "  sleep ${SLEEPING_TIME};  CCACHE_DIR=/tmp/ccachedir ccache")
 endif(CCACHE_FOUND)
 
 
@@ -42,13 +48,13 @@ endif()
 set(SOURCES
   isom_LineContext.cpp
   isom_FaceRenderingContext.cpp
-  isom_TextureMappingContext.cpp
   isom_TextureRenderingContext.cpp
   isom_point.cpp
   isom_transformer.cpp
   isom_dot.cpp
   isom_DotSet.cpp
   isom_line.cpp
+  isom_polygon.cpp
   isom_plane.cpp
   isom_Object.cpp
   isom_Scene.cpp
