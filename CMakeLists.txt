@@ -34,12 +34,12 @@ set(CMAKE_C_FLAGS_DEBUG     "${CMAKE_C_FLAGS}   -Og -g")
 set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS} -Og -g")
 
 
-if(EMSCRIPTEN)
+if(EM)
   set(EXECUTABLE_EXTENSION ".html")
   set(CMAKE_CXX_COMPILER  em++)
   set(CMAKE_CXX_FLAGS "-std=c++14 -Werror -Wno-switch -O2")
   set(CMAKE_CXX_FLAGS_DEBUG "")
-  set(CMAKE_CXX_LINK_FLAGS  "${CMAKE_CXX_LINK_FLAGS} -s USE_SDL=2 -s USE_SDL_IMAGE=2 --preload-file test.png --preload-file motion.png --use-preload-plugins")
+  set(CMAKE_CXX_LINK_FLAGS  "${CMAKE_CXX_LINK_FLAGS} -s USE_SDL=2 -s USE_SDL_IMAGE=2 --preload-file expandmetal.png --preload-file lena_std.png --use-preload-plugins")
 endif()
 
 
@@ -55,9 +55,9 @@ set(SOURCES
   isom_DotSet.cpp
   isom_line.cpp
   isom_polygon.cpp
+  isom_TexturedPolygon.cpp
   isom_plane.cpp
-  isom_Object.cpp
-  isom_Scene.cpp
+  isom_object.cpp
   isom_renderer.cpp
   isom_font.cpp
   isom_image.cpp
@@ -72,7 +72,7 @@ add_executable("testLineContext${EXECUTABLE_EXTENSION}" test_LineContext.cpp ${S
 add_executable("testTextureRenderingContext${EXECUTABLE_EXTENSION}" test_TextureRenderingContext.cpp ${SOURCES})
 
 
-if(EMSCRIPTEN)
+if(EM)
 # set_target_properties("Dolmo${EXECUTABLE_EXTENSION}" PROPERTIES LINK_FLAGS "--shell-file shell.html")
 endif()
 

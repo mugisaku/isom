@@ -10,7 +10,7 @@
 struct
 Point
 {
-  using value_type = double;
+  using value_type = int32_t;
 
   value_type  x;
   value_type  y;

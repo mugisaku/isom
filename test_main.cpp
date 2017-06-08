@@ -5,8 +5,8 @@
 #include"isom_image.hpp"
 #include"isom_point.hpp"
 #include"isom_plane.hpp"
+#include"isom_object.hpp"
 #include"isom_renderer.hpp"
-#include"isom_Scene.hpp"
 #include<random>
 
 
@@ -21,11 +21,7 @@ namespace{
 bool  needed_to_redraw = true;
 
 
-Scene  base_scene;
-Scene  c_scene;
-
-
-constexpr int  sz = 320;
+constexpr int  sz = 64;
 
 
 std::default_random_engine  eng;
@@ -40,12 +36,10 @@ Image
 texture;
 
 
+Object  obj;
+
+
 Transformer  tr;
-
-
-Plane  box_planes[6];
-
-
 
 
 void
@@ -60,11 +54,11 @@ render()
       renderer.clear();
 
        
-      auto  scene = base_scene;
+      auto  o = obj;
 
-      scene.transform(tr);
+      o.transform(tr);
 
-      scene.render(renderer);
+      o.render(renderer);
 
 
       screen::put_renderer(renderer,0,0);
@@ -108,29 +102,17 @@ main_loop()
 
           bool  flag = false;
 
-          bool  shiting = (SDL_GetModState()&KMOD_SHIFT);
+          bool  shifting = (SDL_GetModState()&KMOD_SHIFT);
 
           auto  o = tr.get_angle();
 
             switch(evt.key.keysym.sym)
             {
-          case(SDLK_LEFT ):                               {o.x_degree -= step;}break;
-          case(SDLK_RIGHT):                               {o.x_degree += step;}break;
-          case(SDLK_UP   ): if(shiting){o.z_degree -= step;} else{o.y_degree += step;}break;
-          case(SDLK_DOWN ): if(shiting){o.z_degree += step;} else{o.y_degree -= step;}break;
+          case(SDLK_LEFT ):                                       {o.x_degree -= step;}break;
+          case(SDLK_RIGHT):                                       {o.x_degree += step;}break;
+          case(SDLK_UP   ): if(shifting){o.z_degree -= step;} else{o.y_degree += step;}break;
+          case(SDLK_DOWN ): if(shifting){o.z_degree += step;} else{o.y_degree -= step;}break;
           case(SDLK_SPACE):
-//for(int  n = 0;  n < 10;  ++n)
-{
-Object  o(
-Polygon(
-Dot(Point(dist(eng),dist(eng),dist(eng)),Color(0xFF,0xFF,0xFF,0xFF)),
-Dot(Point(dist(eng),dist(eng),dist(eng)),Color(0xFF,0,0,0xFF)),
-Dot(Point(dist(eng),dist(eng),dist(eng)),Color(0xFF,0xFF,0xFF,0xFF))
-));
-
-
-  base_scene.push(std::move(o));
-}
               break;
           case(SDLK_1): screen::save_as_bmp();break;
             }
@@ -145,6 +127,27 @@ Dot(Point(dist(eng),dist(eng),dist(eng)),Color(0xFF,0xFF,0xFF,0xFF))
 }
 
 
+void
+push(ObjectList&  ls, PlaneDirection  d, const Angle&  angle)
+{
+  ls.emplace_back(Plane());
+
+
+  auto&  pl = ls.back()->plane;
+
+  pl.image = &texture;
+  pl.image_rect = Rect(0,0,sz,sz);
+  pl.direction = d;
+  pl.x_width = sz;
+  pl.y_width = sz;
+
+  pl.angle = angle;
+  pl.center.assign(0,0,0);
+
+  pl.update();
+}
+
+
 }
 
 
@@ -155,41 +158,48 @@ main(int  argc, char**  argv)
 {
   screen::open();
 
-  texture.open("dice.png");
+  texture.open("expandmetal.png");
 
-  Plane  backwall_plane(Point(0,0,0),Point(sz,0,0),Point(sz,sz,0),Point(0,0,0));
-  Plane  leftwall_plane(Point(0,0,0),Point(sz,0,0),Point(sz,sz,0),Point(0,0,0));
-  Plane  floor_plane(Point(0,0,0),Point(320,0,0),Point(320,0,320),Point(0,0,320));
+  texture.set_colorkey(0,0,0);
 
   std::random_device  rdev;
 
   eng = std::default_random_engine(rdev());
 
-  tr.change_offset(200,-200,0);
+
+  ObjectList  ls;
+
+  push(ls,PlaneDirection::top_left,Angle(90,0,0));
+  push(ls,PlaneDirection::bottom_left,Angle(0,0,0));
+  push(ls,PlaneDirection::bottom_right,Angle(0,-90,0));
+
+  obj = Object(std::move(ls));
+
+  tr.change_offset(sz*2,-sz,0);
+  tr.change_center(0,0,0);
 
   tr.set_translation_flag();
   tr.set_rotation_flag();
 
-  base_scene.push(std::move(backwall_plane));
-  base_scene.push(std::move(leftwall_plane));
-  base_scene.push(std::move(   floor_plane));
-
   render();
-/*
-for(int  i = 0;  i <= 360;  i += 5)
+
+
+if(0)
 {
-printf("%10f,//%3d\n",std::sin(to_radian(i)),i);
+    for(int  i = 0;  i <= 360;  i += 5)
+    {
+      printf("%10f,//%3d\n",std::sin(to_radian(i)),i);
+    }
+
+
+  printf("-----\n");
+
+    for(int  i = 0;  i <= 360;  i += 5)
+    {
+      printf("%10f,//%3d\n",std::cos(to_radian(i)),i);
+    }
+  fflush(stdout);
 }
-
-
-printf("-----\n");
-
-for(int  i = 0;  i <= 360;  i += 5)
-{
-printf("%10f,//%3d\n",std::cos(to_radian(i)),i);
-}
-fflush(stdout);
-*/
 
 
 #ifdef EMSCRIPTEN

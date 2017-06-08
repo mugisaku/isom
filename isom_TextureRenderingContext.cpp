@@ -4,6 +4,13 @@
 
 
 TextureRenderingContext::
+TextureRenderingContext():
+image(nullptr)
+{
+}
+
+
+TextureRenderingContext::
 TextureRenderingContext(const Image&  img, const TextureVertex&  a, const TextureVertex&  b, const TextureVertex&  c)
 {
   reset(img,a,b,c);
@@ -47,8 +54,8 @@ const Color&
 TextureRenderingContext::
 get_color() const
 {
-  return image->get_color(final_mapper.get_x(),
-                          final_mapper.get_y());
+  return image->get_color(final_mapper.get_u(),
+                          final_mapper.get_v());
 }
 
 

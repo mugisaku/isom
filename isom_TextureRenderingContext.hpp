@@ -17,6 +17,14 @@ TextureVertex: public Point
   constexpr TextureVertex(const Point&  pt=Point(), int  u_=0, int  v_=0):
   Point(pt), u(u_), v(v_){}
 
+  void  assign(const Point&  pt, int  u_, int  v_)
+  {
+    static_cast<Point&>(*this) = pt;
+
+    u = u_;
+    v = v_;
+  }
+
 };
 
 
@@ -46,6 +54,7 @@ TextureRenderingContext
   void  step_line();
 
 public:
+  TextureRenderingContext();
   TextureRenderingContext(const Image&  img, const TextureVertex&  a, const TextureVertex&  b, const TextureVertex&  c);
 
 

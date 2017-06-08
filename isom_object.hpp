@@ -12,6 +12,7 @@
 #include"isom_DotSet.hpp"
 #include"isom_line.hpp"
 #include"isom_polygon.hpp"
+#include"isom_TexturedPolygon.hpp"
 #include<list>
 
 
@@ -43,8 +44,10 @@ ObjectData
   Dot          dot;
   DotSet    dotset;
   Line        line;
-  Polygon  polygon;
   Plane      plane;
+
+  Polygon                   polygon;
+  TexturedPolygon  textured_polygon;
 
   ObjectList  object_list;  
 
@@ -62,12 +65,13 @@ Object
 
 public:
   Object();
-  Object(Dot&&            dt);
-  Object(DotSet&&       dtst);
-  Object(Line&&           ln);
-  Object(Plane&&          pl);
-  Object(Polygon&&        po);
-  Object(ObjectList&&  objls);
+  Object(Dot&&                dt);
+  Object(DotSet&&           dtst);
+  Object(Line&&               ln);
+  Object(Plane&&              pl);
+  Object(Polygon&&            po);
+  Object(TexturedPolygon&&  txpo);
+  Object(ObjectList&&      objls);
   Object(const Object&   rhs) noexcept;
   Object(      Object&&  rhs) noexcept;
  ~Object();

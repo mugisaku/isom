@@ -120,9 +120,33 @@ put(const Color&  color, int  x, int  y, int  z)
 
         if(cell.z <= z)
         {
-          cell.r = color.r;
-          cell.g = color.g;
-          cell.b = color.b;
+            if(color.a)
+            {
+              auto  a = color.a;
+
+                if(a == 255)
+                {
+                  cell.r = color.r;
+                  cell.g = color.g;
+                  cell.b = color.b;
+                }
+
+              else
+                if(a == 127)
+                {
+                  cell.r = (color.r+cell.r)/2;
+                  cell.g = (color.g+cell.g)/2;
+                  cell.b = (color.b+cell.b)/2;
+                }
+
+              else
+                {
+                  cell.r = ((color.r-cell.r)*a>>8)+cell.r;
+                  cell.g = ((color.g-cell.g)*a>>8)+cell.g;
+                  cell.b = ((color.b-cell.b)*a>>8)+cell.b;
+                }
+            }
+
 
           cell.z = z;
         }
@@ -155,48 +179,6 @@ render_line(const Point&  p0, const Point&  p1, const Color&  color)
 
 
       lc.step();
-    }
-}
-
-
-void
-Renderer::
-render_face(FaceRenderingContext&  ctx)
-{
-    for(;;)
-    {
-      auto&  p = ctx.get_plotter();
-
-//      put(ctx.get_color(),p.get_x(),p.get_y(),p.get_z());
-
-        if(ctx.is_finished())
-        {
-          break;
-        }
-
-
-      ctx.step();
-    }
-}
-
-
-void
-Renderer::
-render_texture(TextureRenderingContext&  ctx)
-{
-    for(;;)
-    {
-      auto&  p = ctx.get_plotter();
-
-      put(ctx.get_color(),p.get_x(),p.get_y(),p.get_z());
-
-        if(ctx.is_finished())
-        {
-          break;
-        }
-
-
-      ctx.step();
     }
 }
 

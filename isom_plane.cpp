@@ -2,24 +2,93 @@
 #include"isom_image.hpp"
 #include"isom_screen.hpp"
 #include"isom_renderer.hpp"
+#include"isom_line.hpp"
 
 
 
 
-TextureRenderingContext
 Plane::
-make_texture_rendering_context(int  i, const Image&  image, const Rect&  rect) const
+Plane(const Image*  img, const Rect&  img_rect,
+      const Point&  base_, PlaneDirection  dir, int  x_width_,int  y_width_,
+      const Point&  center_, const Angle&  angle_):
+image(img),
+image_rect(img_rect),
+base(base_),
+direction(dir),
+x_width(x_width_),
+y_width(y_width_),
+center(center_),
+angle(angle_)
 {
-  using CTX = TextureRenderingContext;
-  using   T = TextureVertex;
+  update();
+}
 
-  int     top = rect.y         ;
-  int  bottom = rect.y+rect.h-1;
-  int    left = rect.x         ;
-  int   right = rect.x+rect.w-1;
 
-    if(i == 0){return CTX(image,T(points[0],left,top),T(points[1],right,   top),T(points[2],right,bottom));}
-  else        {return CTX(image,T(points[0],left,top),T(points[2],right,bottom),T(points[3], left,bottom));}
+
+
+void
+Plane::
+update()
+{
+  int    left = image_rect.x               ;
+  int   right = image_rect.x+image_rect.w-1;
+  int     top = image_rect.y               ;
+  int  bottom = image_rect.y+image_rect.h-1;
+
+    switch(direction)
+    {
+  case(PlaneDirection::top_left):
+      polygons[0].a.assign(Point(base.x-x_width,base.y        ,base.z), left,bottom);
+      polygons[0].b.assign(Point(base.x-x_width,base.y+y_width,base.z), left,   top);
+      polygons[0].c.assign(Point(base.x        ,base.y+y_width,base.z),right,   top);
+
+      polygons[1].a.assign(Point(base.x-x_width,base.y        ,base.z), left,bottom);
+      polygons[1].b.assign(Point(base.x        ,base.y+y_width,base.z),   right,top);
+      polygons[1].c.assign(Point(base.x        ,base.y        ,base.z),right,bottom);
+      break;
+  case(PlaneDirection::top_right):
+      polygons[0].a.assign(Point(base.x        ,base.y        ,base.z), left,bottom);
+      polygons[0].b.assign(Point(base.x        ,base.y+y_width,base.z), left,   top);
+      polygons[0].c.assign(Point(base.x+x_width,base.y+y_width,base.z),right,   top);
+
+      polygons[1].a.assign(Point(base.x        ,base.y        ,base.z), left,bottom);
+      polygons[1].b.assign(Point(base.x+x_width,base.y+y_width,base.z),   right,top);
+      polygons[1].c.assign(Point(base.x+x_width,base.y        ,base.z),right,bottom);
+      break;
+  case(PlaneDirection::bottom_left):
+      polygons[0].a.assign(Point(base.x-x_width,base.y-y_width,base.z), left,bottom);
+      polygons[0].b.assign(Point(base.x-x_width,base.y        ,base.z), left,   top);
+      polygons[0].c.assign(Point(base.x        ,base.y        ,base.z),right,   top);
+
+      polygons[1].a.assign(Point(base.x-x_width,base.y-y_width,base.z), left,bottom);
+      polygons[1].b.assign(Point(base.x        ,base.y        ,base.z),   right,top);
+      polygons[1].c.assign(Point(base.x        ,base.y-y_width,base.z),right,bottom);
+      break;
+  case(PlaneDirection::bottom_right):
+      polygons[0].a.assign(Point(base.x        ,base.y-y_width,base.z), left,bottom);
+      polygons[0].b.assign(Point(base.x        ,base.y        ,base.z), left,   top);
+      polygons[0].c.assign(Point(base.x+x_width,base.y        ,base.z),right,   top);
+
+      polygons[1].a.assign(Point(base.x        ,base.y-y_width,base.z), left,bottom);
+      polygons[1].b.assign(Point(base.x+x_width,base.y        ,base.z),   right,top);
+      polygons[1].c.assign(Point(base.x+x_width,base.y-y_width,base.z),right,bottom);
+      break;
+    }
+
+
+  Transformer  tr;
+
+  tr.change_angle(angle);
+  tr.change_center(base+center);
+
+  tr.set_rotation_flag();
+
+    for(auto&  poly: polygons)
+    {
+      poly.image = image;
+
+      poly.transform(tr);
+    }
 }
 
 
@@ -27,9 +96,9 @@ void
 Plane::
 transform(const Transformer&  tr)
 {
-    for(auto&  pt: points)
+    for(auto&  poly: polygons)
     {
-      pt = tr(pt);
+      poly.transform(tr);
     }
 }
 
@@ -38,25 +107,10 @@ void
 Plane::
 render(Renderer&  dst) const
 {
-    for(auto&  pt: points)
+    for(auto&  poly: polygons)
     {
+      poly.render(dst);
     }
-}
-
-
-void
-Plane::
-render_face(Renderer&  dst, const Color&  color) const
-{
-/*
-  FaceRenderingContext  frctx(color,points[0],points[1],points[2]);
-
-  dst.render_face(frctx);
-
-  frctx.reset(color,points[0],points[2],points[3]);
-
-  dst.render_face(frctx);
-*/
 }
 
 
@@ -64,25 +118,23 @@ void
 Plane::
 render_wire(Renderer&  dst) const
 {
-  constexpr Color  wire_color(0xFF,0xFF,0xFF);
+  Line  lines[4];
 
-  dst.render_line(points[0],points[1],wire_color);
-  dst.render_line(points[1],points[2],wire_color);
-  dst.render_line(points[2],points[3],wire_color);
-  dst.render_line(points[3],points[0],wire_color);
+  static_cast<Point&>(lines[0].a) = static_cast<const Point&>(polygons[0].a);
+  static_cast<Point&>(lines[0].b) = static_cast<const Point&>(polygons[0].b);
+  static_cast<Point&>(lines[1].a) = static_cast<const Point&>(polygons[0].b);
+  static_cast<Point&>(lines[1].b) = static_cast<const Point&>(polygons[0].c);
+  static_cast<Point&>(lines[2].a) = static_cast<const Point&>(polygons[0].c);
+  static_cast<Point&>(lines[2].b) = static_cast<const Point&>(polygons[1].c);
+  static_cast<Point&>(lines[3].a) = static_cast<const Point&>(polygons[1].c);
+  static_cast<Point&>(lines[3].b) = static_cast<const Point&>(polygons[0].a);
+
+    for(auto&  ln: lines)
+    {
+      ln.render(dst);
+    }
 }
 
-
-void
-Plane::
-render_texture(Renderer&  dst, const Image&  img, const Rect&  rect) const
-{
-  auto  a = make_texture_rendering_context(0,img,rect);
-  auto  b = make_texture_rendering_context(1,img,rect);
-
-  dst.render_texture(a);
-  dst.render_texture(b);
-}
 
 
 

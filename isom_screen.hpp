@@ -14,8 +14,8 @@ struct Rect;
 namespace screen{
 
 
-constexpr int  width  = 540;
-constexpr int  height = 540;
+constexpr int  width  = 400;
+constexpr int  height = 400;
 
 
 constexpr uint32_t  white = 0xFFFFFFFF;

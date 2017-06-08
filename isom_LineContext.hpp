@@ -16,7 +16,7 @@ LineContext
 {
   using value_type = int32_t;
 
-  static constexpr value_type  shift_amount = 22;
+  static constexpr value_type  shift_amount = 16;
 
   static constexpr int  base     = (1<<shift_amount);
   static constexpr int  basehalf = base/2;

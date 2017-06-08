@@ -30,7 +30,6 @@ Image
 texture;
 
 
-Plane  base_plane(Point(0,sz,0),Point(sz,sz,0),Point(sz,0,0),Point(0,0,0));
 Plane  plane;
 
 
@@ -61,15 +60,16 @@ render()
 
       dotset.render(renderer);
 
-      plane = base_plane;
-
-      plane.transform(tr);
-
-      plane.render_wire(renderer);
-
       renderer.render_image(texture,nullptr,0,0,0);
 
       nega_dotset.render(renderer);
+
+
+      auto  tmplane = plane;
+
+      tmplane.transform(tr);
+
+      tmplane.render_wire(renderer);
 
       screen::put_renderer(renderer,0,0);
 
@@ -78,6 +78,99 @@ render()
       screen::update();
 
       needed_to_redraw = false;
+    }
+}
+
+
+void
+step()
+{
+  static uint32_t  last;
+
+  auto  now = SDL_GetTicks();
+
+    if(now >= last+40)
+    {
+      last = now;
+
+        if(ctx_stack.size())
+        {
+          auto&  ctx = ctx_stack.back();
+
+          int  n = 200;
+
+            while(n--)
+            {
+              auto&  p = ctx.get_plotter();
+              auto&  m = ctx.get_mapper();
+
+                   dotset->emplace_back(Point(p.get_x(), p.get_y(),p.get_z()),ctx.get_color());
+              nega_dotset->emplace_back(Point(m.get_x(),-m.get_y(),        1),        Color());
+
+              dotset->back().transform(tr);
+
+                if(ctx.is_finished())
+                {
+                  ctx_stack.pop_back();
+
+                  break;
+                }
+
+              else
+                {
+                  ctx.step();
+                }
+            }
+
+
+          needed_to_redraw = true;
+        }
+    }
+}
+
+
+void
+process_keydown(int  key)
+{
+  needed_to_redraw = true;
+
+  constexpr int  step = 5;
+
+  bool  flag = false;
+
+  bool  shifting = (SDL_GetModState()&KMOD_SHIFT);
+
+  static Angle  a;
+
+    switch(key)
+    {
+  case(SDLK_LEFT ):                                       {a.x_degree -= step;}break;
+  case(SDLK_RIGHT):                                       {a.x_degree += step;}break;
+  case(SDLK_UP   ): if(shifting){a.z_degree += step;} else{a.y_degree += step;}break;
+  case(SDLK_DOWN ): if(shifting){a.z_degree -= step;} else{a.y_degree -= step;}break;
+  case(SDLK_SPACE):
+      flag = true;
+      break;
+  case(SDLK_1): screen::save_as_bmp();break;
+    }
+
+
+  tr.change_angle(a);
+
+    if(flag)
+    {
+           dotset->clear();
+      nega_dotset->clear();
+
+
+      auto  tmplane = plane;
+
+      tmplane.transform(tr);
+
+      ctx_stack.clear();
+
+      ctx_stack.emplace_back(plane.polygons[0].make_rendering_context());
+      ctx_stack.emplace_back(plane.polygons[1].make_rendering_context());
     }
 }
 
@@ -106,87 +199,13 @@ main_loop()
           break;
 #endif
       case(SDL_KEYDOWN):
-          needed_to_redraw = true;
-
-          constexpr double  step = 5;
-
-          bool  flag = false;
-
-          bool  shiting = (SDL_GetModState()&KMOD_SHIFT);
-
-          static Angle  a;
-
-            switch(evt.key.keysym.sym)
-            {
-          case(SDLK_LEFT ):                                      {a.x_degree -= step;}break;
-          case(SDLK_RIGHT):                                      {a.x_degree += step;}break;
-          case(SDLK_UP   ): if(shiting){a.z_degree += step;} else{a.y_degree += step;}break;
-          case(SDLK_DOWN ): if(shiting){a.z_degree -= step;} else{a.y_degree -= step;}break;
-          case(SDLK_SPACE):
-              flag = true;
-              break;
-          case(SDLK_1): screen::save_as_bmp();break;
-            }
-
-
-          tr.change_angle(a.x_degree,a.y_degree,a.z_degree);
-
-            if(flag)
-            {
-                   dotset->clear();
-              nega_dotset->clear();
-
-              ctx_stack.clear();
-
-              constexpr Rect  rect(0,0,sz,sz);
-
-              ctx_stack.emplace_back(plane.make_texture_rendering_context(0,texture,rect));
-              ctx_stack.emplace_back(plane.make_texture_rendering_context(1,texture,rect));
-            }
+          process_keydown(evt.key.keysym.sym);
+          break;
         }
     }
 
 
-static uint32_t  last;
-
-auto  now = SDL_GetTicks();
-
-  if(now >= last+40)
-  {
-    last = now;
-
-      if(ctx_stack.size())
-      {
-        auto&  ctx = ctx_stack.back();
-
-        int  n = 200;
-
-          while(n--)
-          {
-            auto&  p = ctx.get_plotter();
-            auto&  m = ctx.get_mapper();
-
-                 dotset->emplace_back(Point(p.get_x(), p.get_y(),p.get_z()),ctx.get_color());
-            nega_dotset->emplace_back(Point(m.get_x(),-m.get_y(),        1),        Color());
-
-              if(ctx.is_finished())
-              {
-                ctx_stack.pop_back();
-
-                break;
-              }
-
-            else
-              {
-                ctx.step();
-              }
-          }
-
-
-        needed_to_redraw = true;
-      }
-  }
-
+  step();
 
   render();
 }
@@ -204,10 +223,20 @@ main(int  argc, char**  argv)
 
   texture.open("lena_std.png");
 
+  plane.image = &texture;
+  plane.image_rect = Rect(0,0,sz,sz);
+  plane.direction = PlaneDirection::top_right;
+  plane.x_width = sz;
+  plane.y_width = sz;
+  plane.center.assign(sz/2,sz/2,0);
+
+  plane.update();
+
+
   tr.set_translation_flag();
   tr.set_rotation_flag();
 
-  tr.change_offset(200,-400,0);
+  tr.change_offset(240,-240,0);
 
   render();
 

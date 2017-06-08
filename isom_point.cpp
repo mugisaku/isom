@@ -89,7 +89,7 @@ void
 Point::
 print(const char*  s) const
 {
-  printf("[print %s point] %4f %4f %4f\n",s,x,y,z);
+//  printf("[print %s point] %4f %4f %4f\n",s,x,y,z);
 }
 
 

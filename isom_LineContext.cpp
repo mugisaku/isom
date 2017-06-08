@@ -22,24 +22,24 @@ LineContext(value_type  x0_, value_type  y0_, value_type  z0_,
 LineContext::
 LineContext(const Point&  a, const Point&  b)
 {
-  reset(to_int(a.x),
-        to_int(a.y),
-        to_int(a.z),
-        to_int(b.x),
-        to_int(b.y),
-        to_int(b.z));
+  reset((a.x),
+        (a.y),
+        (a.z),
+        (b.x),
+        (b.y),
+        (b.z));
 }
 
 
 LineContext::
 LineContext(const Point&  a, const Point&  b, value_type  dist)
 {
-  reset(to_int(a.x),
-        to_int(a.y),
-        to_int(a.z),
-        to_int(b.x),
-        to_int(b.y),
-        to_int(b.z),dist);
+  reset((a.x),
+        (a.y),
+        (a.z),
+        (b.x),
+        (b.y),
+        (b.z),dist);
 }
 
 

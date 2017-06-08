@@ -18,6 +18,14 @@ Angle
   constexpr Angle(int  x=0, int  y=0, int  z=0):
   x_degree(x), y_degree(y), z_degree(z){}
 
+  void  assign(int  x, int  y, int  z)
+  {
+    x_degree = x;
+    y_degree = y;
+    z_degree = z;
+  }
+
+
   Angle  operator+(const Angle&  rhs) const
   {
     return Angle(x_degree+rhs.x_degree,
@@ -63,8 +71,8 @@ public:
 
   void  change_scaling_rate(double  x, double  y, double  z);
 
-  void  change_center(double  x, double  y, double  z);
-  void  change_offset(double  x, double  y, double  z);
+  void  change_center(int  x, int  y, int  z);
+  void  change_offset(int  x, int  y, int  z);
 
   void  change_center(const Point&  pt){change_center(pt.x,pt.y,pt.z);}
   void  change_offset(const Point&  pt){change_offset(pt.x,pt.y,pt.z);}

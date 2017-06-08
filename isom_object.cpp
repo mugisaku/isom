@@ -1,16 +1,17 @@
-#include"isom_Object.hpp"
+#include"isom_object.hpp"
 #include<new>
 
 
 
 
-Object::Object(): kind(ObjectKind::null){}
-Object::Object(Dot&&            dt): kind(ObjectKind::dot        ){new(&data) Dot(std::move(dt));}
-Object::Object(DotSet&&       dtst): kind(ObjectKind::dotset     ){new(&data) DotSet(std::move(dtst));}
-Object::Object(Line&&           ln): kind(ObjectKind::line       ){new(&data) Line(std::move(ln));}
-Object::Object(Plane&&          pl): kind(ObjectKind::plane      ){new(&data) Plane(std::move(pl));}
-Object::Object(Polygon&&        po): kind(ObjectKind::polygon    ){new(&data) Polygon(std::move(po));}
-Object::Object(ObjectList&&  objls): kind(ObjectKind::object_list){new(&data) ObjectList(std::move(objls));}
+Object::Object(                       ): kind(ObjectKind::null            ){}
+Object::Object(Dot&&                dt): kind(ObjectKind::dot             ){new(&data) Dot(std::move(dt));}
+Object::Object(DotSet&&           dtst): kind(ObjectKind::dotset          ){new(&data) DotSet(std::move(dtst));}
+Object::Object(Line&&               ln): kind(ObjectKind::line            ){new(&data) Line(std::move(ln));}
+Object::Object(Plane&&              pl): kind(ObjectKind::plane           ){new(&data) Plane(std::move(pl));}
+Object::Object(Polygon&&            po): kind(ObjectKind::polygon         ){new(&data) Polygon(std::move(po));}
+Object::Object(TexturedPolygon&&  txpo): kind(ObjectKind::textured_polygon){new(&data) TexturedPolygon(std::move(txpo));}
+Object::Object(ObjectList&&      objls): kind(ObjectKind::object_list     ){new(&data) ObjectList(std::move(objls));}
 Object::Object(const Object&   rhs) noexcept: kind(ObjectKind::null){*this = rhs;}
 Object::Object(      Object&&  rhs) noexcept: kind(ObjectKind::null){*this = std::move(rhs);}
 
@@ -51,10 +52,17 @@ operator=(const Object&   rhs) noexcept
   case(ObjectKind::polygon):
       new(&data) Polygon(rhs.data.polygon);
       break;
+  case(ObjectKind::textured_polygon):
+      new(&data) TexturedPolygon(rhs.data.textured_polygon);
+      break;
   case(ObjectKind::object_list):
       new(&data) ObjectList(rhs.data.object_list);
       break;
+  default:;
     }
+
+
+  return *this;
 }
 
 
@@ -85,10 +93,17 @@ operator=(Object&&  rhs) noexcept
   case(ObjectKind::polygon):
       new(&data) Polygon(std::move(rhs.data.polygon));
       break;
+  case(ObjectKind::textured_polygon):
+      new(&data) TexturedPolygon(std::move(rhs.data.textured_polygon));
+      break;
   case(ObjectKind::object_list):
       new(&data) ObjectList(std::move(rhs.data.object_list));
       break;
+  default:;
     }
+
+
+  return *this;
 }
 
 
@@ -117,9 +132,13 @@ clear()
   case(ObjectKind::polygon):
       data.polygon.~Polygon();
       break;
+  case(ObjectKind::textured_polygon):
+      data.textured_polygon.~TexturedPolygon();
+      break;
   case(ObjectKind::object_list):
       data.object_list.~list();
       break;
+  default:;
     }
 
 
@@ -152,12 +171,16 @@ transform(const Transformer&  tr)
   case(ObjectKind::polygon):
       data.polygon.transform(tr);
       break;
+  case(ObjectKind::textured_polygon):
+      data.textured_polygon.transform(tr);
+      break;
   case(ObjectKind::object_list):
         for(auto&  obj: data.object_list)
         {
           obj.transform(tr);
         }
       break;
+  default:;
     }
 }
 
@@ -185,12 +208,16 @@ render(Renderer&  dst) const
   case(ObjectKind::polygon):
       data.polygon.render(dst);
       break;
+  case(ObjectKind::textured_polygon):
+      data.textured_polygon.render(dst);
+      break;
   case(ObjectKind::object_list):
         for(auto&  obj: data.object_list)
         {
           obj.render(dst);
         }
       break;
+  default:;
     }
 }
 

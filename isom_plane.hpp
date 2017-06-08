@@ -7,28 +7,55 @@
 #include"isom_renderer.hpp"
 #include"isom_image.hpp"
 #include"isom_transformer.hpp"
+#include"isom_TexturedPolygon.hpp"
 
 
+
+
+enum class
+PlaneDirection
+{
+  top_left,
+  top_right,
+  bottom_left,
+  bottom_right,
+
+};
 
 
 struct
 Plane
 {
-  Point  points[4];
+  const Image*  image;
 
-  constexpr Plane(Point  p0=Point(), Point  p1=Point(), Point  p2=Point(), Point  p3=Point()):
-  points{p0,p1,p2,p3}{}
+  Rect  image_rect;
+
+  Point  base;
+
+  PlaneDirection  direction;
+
+  int  x_width;
+  int  y_width;
+
+  Point  center;
+
+  Angle  angle;
+
+  TexturedPolygon  polygons[2];
 
 
-  TextureRenderingContext  make_texture_rendering_context(int  i, const Image&  image, const Rect&  rect) const;
+  Plane(): image(nullptr){}
+  Plane(const Image*  img, const Rect&  img_rect,
+        const Point&  base_, PlaneDirection  dir, int  x_width_,int  y_width_,
+        const Point&  center_, const Angle&  angle_);
+
+
+  void  update();
 
   void  transform(const Transformer&  tr);
 
   void  render(Renderer&  dst) const;
-
-  void  render_face(Renderer&  dst, const Color&  color) const;
   void  render_wire(Renderer&  dst) const;
-  void  render_texture(Renderer&  dst, const Image&  img, const Rect&  rect) const;
 
 };
 

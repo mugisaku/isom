@@ -5,17 +5,18 @@
 #include<cmath>
 #include<climits>
 #include<algorithm>
+#include<cstdio>
+#include<cstdlib>
 
 
 constexpr double  pi = 3.14159265358979323846;
 
 
-constexpr
-int
-to_int(double  d)
-{
-  return static_cast<int>(std::round(d));
-}
+#ifndef report
+#define  report  printf("[%s %4d] %s\n",__FILE__,__LINE__,__func__);
+#endif
+
+
 
 
 constexpr

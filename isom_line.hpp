@@ -12,7 +12,8 @@ Line
   Dot  a;
   Dot  b;
 
-  Line();
+  Line(): a(Point(),Color(0xFF,0xFF,0xFF,0xFF)),
+          b(Point(),Color(0xFF,0xFF,0xFF,0xFF)){}
   Line(const Dot&  a_, const Dot&  b_): a(a_), b(b_){}
 
   void  transform(const Transformer&  tr);

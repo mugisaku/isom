@@ -16,8 +16,17 @@ to_index(int  degree)
 
 Transformer::
 Transformer():
-flags(0)
+flags(0),
+x_rate(1),
+y_rate(1),
+z_rate(1)
 {
+  x_sin_value = sin_value_table[0];
+  x_cos_value = cos_value_table[0];
+  y_sin_value = sin_value_table[0];
+  y_cos_value = cos_value_table[0];
+  z_sin_value = sin_value_table[0];
+  z_cos_value = cos_value_table[0];
 }
 
 
@@ -58,7 +67,7 @@ change_scaling_rate(double  x, double  y, double  z)
 
 void
 Transformer::
-change_center(double  x, double  y, double  z)
+change_center(int  x, int  y, int  z)
 {
   center.assign(x,y,z);
 }
@@ -66,7 +75,7 @@ change_center(double  x, double  y, double  z)
 
 void
 Transformer::
-change_offset(double  x, double  y, double  z)
+change_offset(int  x, int  y, int  z)
 {
   offset.assign(x,y,z);
 }
