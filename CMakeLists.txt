@@ -35,7 +35,7 @@ set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS} -Og -g")
 
 
 if(EM)
-  set(EXECUTABLE_EXTENSION ".html")
+  set(EXTENSION ".html")
   set(CMAKE_CXX_COMPILER  em++)
   set(CMAKE_CXX_FLAGS "-std=c++14 -Werror -Wno-switch -O2")
   set(CMAKE_CXX_FLAGS_DEBUG "")
@@ -57,6 +57,7 @@ set(SOURCES
   isom_polygon.cpp
   isom_TexturedPolygon.cpp
   isom_plane.cpp
+  isom_box.cpp
   isom_object.cpp
   isom_renderer.cpp
   isom_font.cpp
@@ -67,13 +68,15 @@ set(SOURCES
 
 include_directories(.)
 include_directories(/usr/include/SDL2)
-add_executable("testMain${EXECUTABLE_EXTENSION}" test_main.cpp ${SOURCES})
-add_executable("testLineContext${EXECUTABLE_EXTENSION}" test_LineContext.cpp ${SOURCES})
-add_executable("testTextureRenderingContext${EXECUTABLE_EXTENSION}" test_TextureRenderingContext.cpp ${SOURCES})
+add_executable("testBox${EXTENSION}" testBox.cpp ${SOURCES})
+add_executable("testLineContext${EXTENSION}" testLineContext.cpp ${SOURCES})
+add_executable("testTextureRenderingContext${EXTENSION}" testTextureRenderingContext.cpp ${SOURCES})
 
 
 if(EM)
-# set_target_properties("Dolmo${EXECUTABLE_EXTENSION}" PROPERTIES LINK_FLAGS "--shell-file shell.html")
+  set_target_properties("testTextureRenderingContext${EXTENSION}" PROPERTIES LINK_FLAGS "--shell-file ../shell__tTRC.html")
+  set_target_properties("testBox${EXTENSION}" PROPERTIES LINK_FLAGS "--shell-file ../shell__tB.html")
+  set_target_properties("testLineContext${EXTENSION}" PROPERTIES LINK_FLAGS "--shell-file ../shell__tLC.html")
 endif()
 
 

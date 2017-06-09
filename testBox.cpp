@@ -32,8 +32,8 @@ Renderer
 renderer(screen::width,screen::height);
 
 
-Image
-texture;
+Image  a_texture;
+Image  b_texture;
 
 
 Object  obj;
@@ -54,7 +54,7 @@ render()
       renderer.clear();
 
        
-      auto  o = obj;
+      Object  o = obj;
 
       o.transform(tr);
 
@@ -127,27 +127,6 @@ main_loop()
 }
 
 
-void
-push(ObjectList&  ls, PlaneDirection  d, const Angle&  angle)
-{
-  ls.emplace_back(Plane());
-
-
-  auto&  pl = ls.back()->plane;
-
-  pl.image = &texture;
-  pl.image_rect = Rect(0,0,sz,sz);
-  pl.direction = d;
-  pl.x_width = sz;
-  pl.y_width = sz;
-
-  pl.angle = angle;
-  pl.center.assign(0,0,0);
-
-  pl.update();
-}
-
-
 }
 
 
@@ -158,24 +137,43 @@ main(int  argc, char**  argv)
 {
   screen::open();
 
-  texture.open("expandmetal.png");
+  a_texture.open("expandmetal.png");
+  b_texture.open("lena_std.png");
 
-  texture.set_colorkey(0,0,0);
+  a_texture.set_colorkey(0,0,0);
 
   std::random_device  rdev;
 
   eng = std::default_random_engine(rdev());
 
 
-  ObjectList  ls;
+  obj = Object(ObjectList());
 
-  push(ls,PlaneDirection::top_left,Angle(90,0,0));
-  push(ls,PlaneDirection::bottom_left,Angle(0,0,0));
-  push(ls,PlaneDirection::bottom_right,Angle(0,-90,0));
+  Box  box;
 
-  obj = Object(std::move(ls));
+  box.build(Point(0,0,0),80,80,40);
 
-  tr.change_offset(sz*2,-sz,0);
+  box.get_bottom().change_texture(&a_texture,Rect(0,0,64,64));
+  box.get_left().change_texture(&a_texture,Rect(0,0,64,64));
+  box.get_back().change_texture(&a_texture,Rect(0,0,64,64));
+
+  box.get_top().change_texture(&a_texture,Rect(0,0,64,64));
+  box.get_right().change_texture(&a_texture,Rect(0,0,64,64));
+  box.get_front().change_texture(&a_texture,Rect(0,0,64,64));
+
+
+  obj->object_list.emplace_back(std::move(box));
+
+
+  Polygon  poly(Dot(Point( 0, 0, 0),Color(0xFF,0   ,0xFF,0xFF)),
+                Dot(Point(80,40, 0),Color(0x00,0xFF,0xFF,0xFF)),
+                Dot(Point( 0,80,40),Color(0xFF,0   ,0xFF,0xFF)));
+
+  obj->object_list.emplace_back(std::move(poly));
+
+  
+
+  tr.change_offset(sz*2,-sz*2,0);
   tr.change_center(0,0,0);
 
   tr.set_translation_flag();

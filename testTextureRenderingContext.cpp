@@ -107,8 +107,6 @@ step()
                    dotset->emplace_back(Point(p.get_x(), p.get_y(),p.get_z()),ctx.get_color());
               nega_dotset->emplace_back(Point(m.get_x(),-m.get_y(),        1),        Color());
 
-              dotset->back().transform(tr);
-
                 if(ctx.is_finished())
                 {
                   ctx_stack.pop_back();
@@ -134,7 +132,7 @@ process_keydown(int  key)
 {
   needed_to_redraw = true;
 
-  constexpr int  step = 5;
+  constexpr int  step = 15;
 
   bool  flag = false;
 
@@ -169,8 +167,8 @@ process_keydown(int  key)
 
       ctx_stack.clear();
 
-      ctx_stack.emplace_back(plane.polygons[0].make_rendering_context());
-      ctx_stack.emplace_back(plane.polygons[1].make_rendering_context());
+      ctx_stack.emplace_back(tmplane.polygons[0].make_rendering_context());
+      ctx_stack.emplace_back(tmplane.polygons[1].make_rendering_context());
     }
 }
 

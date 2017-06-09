@@ -11,6 +11,7 @@ Object::Object(Line&&               ln): kind(ObjectKind::line            ){new(
 Object::Object(Plane&&              pl): kind(ObjectKind::plane           ){new(&data) Plane(std::move(pl));}
 Object::Object(Polygon&&            po): kind(ObjectKind::polygon         ){new(&data) Polygon(std::move(po));}
 Object::Object(TexturedPolygon&&  txpo): kind(ObjectKind::textured_polygon){new(&data) TexturedPolygon(std::move(txpo));}
+Object::Object(Box&&               box): kind(ObjectKind::box             ){new(&data) Box(std::move(box));}
 Object::Object(ObjectList&&      objls): kind(ObjectKind::object_list     ){new(&data) ObjectList(std::move(objls));}
 Object::Object(const Object&   rhs) noexcept: kind(ObjectKind::null){*this = rhs;}
 Object::Object(      Object&&  rhs) noexcept: kind(ObjectKind::null){*this = std::move(rhs);}
@@ -55,6 +56,9 @@ operator=(const Object&   rhs) noexcept
   case(ObjectKind::textured_polygon):
       new(&data) TexturedPolygon(rhs.data.textured_polygon);
       break;
+  case(ObjectKind::box):
+      new(&data) Box(rhs.data.box);
+      break;
   case(ObjectKind::object_list):
       new(&data) ObjectList(rhs.data.object_list);
       break;
@@ -96,6 +100,9 @@ operator=(Object&&  rhs) noexcept
   case(ObjectKind::textured_polygon):
       new(&data) TexturedPolygon(std::move(rhs.data.textured_polygon));
       break;
+  case(ObjectKind::box):
+      new(&data) Box(std::move(rhs.data.box));
+      break;
   case(ObjectKind::object_list):
       new(&data) ObjectList(std::move(rhs.data.object_list));
       break;
@@ -134,6 +141,9 @@ clear()
       break;
   case(ObjectKind::textured_polygon):
       data.textured_polygon.~TexturedPolygon();
+      break;
+  case(ObjectKind::box):
+      data.box.~Box();
       break;
   case(ObjectKind::object_list):
       data.object_list.~list();
@@ -174,6 +184,9 @@ transform(const Transformer&  tr)
   case(ObjectKind::textured_polygon):
       data.textured_polygon.transform(tr);
       break;
+  case(ObjectKind::box):
+      data.box.transform(tr);
+      break;
   case(ObjectKind::object_list):
         for(auto&  obj: data.object_list)
         {
@@ -210,6 +223,9 @@ render(Renderer&  dst) const
       break;
   case(ObjectKind::textured_polygon):
       data.textured_polygon.render(dst);
+      break;
+  case(ObjectKind::box):
+      data.box.render(dst);
       break;
   case(ObjectKind::object_list):
         for(auto&  obj: data.object_list)

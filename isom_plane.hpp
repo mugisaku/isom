@@ -44,11 +44,13 @@ Plane
   TexturedPolygon  polygons[2];
 
 
-  Plane(): image(nullptr){}
+  Plane(): image(nullptr), x_width(0), y_width(0){}
   Plane(const Image*  img, const Rect&  img_rect,
         const Point&  base_, PlaneDirection  dir, int  x_width_,int  y_width_,
         const Point&  center_, const Angle&  angle_);
 
+
+  void  change_texture(const Image*  img, const Rect&  rect);
 
   void  update();
 

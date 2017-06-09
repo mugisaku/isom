@@ -13,6 +13,7 @@
 #include"isom_line.hpp"
 #include"isom_polygon.hpp"
 #include"isom_TexturedPolygon.hpp"
+#include"isom_box.hpp"
 #include<list>
 
 
@@ -28,6 +29,7 @@ ObjectKind
   polygon,
   textured_polygon,
   plane,
+  box,
   object_list,
 
 };
@@ -48,6 +50,8 @@ ObjectData
 
   Polygon                   polygon;
   TexturedPolygon  textured_polygon;
+
+  Box  box;
 
   ObjectList  object_list;  
 
@@ -71,6 +75,7 @@ public:
   Object(Plane&&              pl);
   Object(Polygon&&            po);
   Object(TexturedPolygon&&  txpo);
+  Object(Box&&               box);
   Object(ObjectList&&      objls);
   Object(const Object&   rhs) noexcept;
   Object(      Object&&  rhs) noexcept;

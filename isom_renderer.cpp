@@ -145,10 +145,10 @@ put(const Color&  color, int  x, int  y, int  z)
                   cell.g = ((color.g-cell.g)*a>>8)+cell.g;
                   cell.b = ((color.b-cell.b)*a>>8)+cell.b;
                 }
+
+
+              cell.z = z;
             }
-
-
-          cell.z = z;
         }
     }
 }

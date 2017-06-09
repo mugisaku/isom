@@ -28,12 +28,33 @@ angle(angle_)
 
 void
 Plane::
+change_texture(const Image*  img, const Rect&  rect)
+{
+  image      =  img;
+  image_rect = rect;
+
+  update();
+}
+
+
+void
+Plane::
 update()
 {
-  int    left = image_rect.x               ;
-  int   right = image_rect.x+image_rect.w-1;
-  int     top = image_rect.y               ;
-  int  bottom = image_rect.y+image_rect.h-1;
+  bool  xrev = (image_rect.w < 0);
+  bool  yrev = (image_rect.h < 0);
+
+  int  w = std::abs(image_rect.w);
+  int  h = std::abs(image_rect.h);
+
+  int    left = image_rect.x    ;
+  int   right = image_rect.x+w-1;
+  int     top = image_rect.y    ;
+  int  bottom = image_rect.y+h-1;
+
+    if(xrev){std::swap(left, right);}
+    if(yrev){std::swap( top,bottom);}
+
 
     switch(direction)
     {
