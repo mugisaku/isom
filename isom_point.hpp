@@ -3,6 +3,7 @@
 
 
 #include"isom_math.hpp"
+#include"isom_angle.hpp"
 
 
 
@@ -33,6 +34,8 @@ Point
   void  print(const char*  s="") const;
 
   Point  to_isometric_angle() const;
+
+  static Angle  get_angle(const Point&  base, const Point&  target);
 
 };
 

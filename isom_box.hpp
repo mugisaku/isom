@@ -23,7 +23,10 @@ Box
 
   void  transform(const Transformer&  tr);
 
+  void  update();
+
   void  render(Renderer&  dst) const;
+  void  render_wire(Renderer&  dst) const;
 
 };
 

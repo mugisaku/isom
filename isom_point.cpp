@@ -95,3 +95,17 @@ print(const char*  s) const
 
 
 
+Angle
+Point::
+get_angle(const Point&  base, const Point&  target)
+{
+  int  x = to_degree(std::atan2(target.y-base.y,target.z-base.z));
+  int  y = to_degree(std::atan2(target.z-base.z,target.x-base.x));
+  int  z = to_degree(std::atan2(target.y-base.y,target.x-base.x));
+
+  return Angle(x,y,z);
+}
+
+
+
+

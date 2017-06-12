@@ -18,23 +18,50 @@ transform(const Transformer&  tr)
 
 void
 Polygon::
+update()
+{
+  Vector  aa(a);
+  Vector  bb(b);
+  Vector  cc(c);
+
+  Vector  ab(bb-aa);
+  Vector  bc(cc-bb);
+
+
+  normal_vector = ab*bc;
+
+  normal_vector.normalize();
+}
+
+
+void
+Polygon::
 render(Renderer&  dst) const
 {
-  FaceRenderingContext  ctx(a,b,c);
+  auto  r = Vector::dot_product(light,normal_vector);
 
-    for(;;)
+    if(r > 0)
     {
-      auto&  p = ctx.get_plotter();
+      auto  f = 255*r;
 
-      dst.put(ctx.get_color(),p.get_x(),p.get_y(),p.get_z());
+      Color  color(f,0,0,255);
 
-        if(ctx.is_finished())
+      FaceRenderingContext  ctx(Dot(a,color),Dot(b,color),Dot(c,color));
+
+        for(;;)
         {
-          break;
+          auto&  p = ctx.get_plotter();
+
+          dst.put(ctx.get_color(),p.get_x(),p.get_y(),p.get_z());
+
+            if(ctx.is_finished())
+            {
+              break;
+            }
+
+
+          ctx.step();
         }
-
-
-      ctx.step();
     }
 }
 

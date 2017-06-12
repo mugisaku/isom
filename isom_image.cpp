@@ -108,3 +108,13 @@ set_colorkey(uint8_t  r, uint8_t  g, uint8_t  b)
 
 
 
+const Color&
+Image::
+get_color(int  x, int  y) const
+{
+  return table[(width*(y%height))+(x%width)];
+}
+
+
+
+

@@ -5,6 +5,7 @@
 #include<cstdint>
 #include<vector>
 #include"isom_point.hpp"
+#include"isom_vector.hpp"
 #include"isom_image.hpp"
 #include"isom_LineContext.hpp"
 
@@ -22,6 +23,9 @@ Cell: public Color
   const Plane*  plane;
 
 };
+
+
+extern Vector  light;
 
 
 class

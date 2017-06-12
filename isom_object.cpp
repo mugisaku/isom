@@ -200,6 +200,43 @@ transform(const Transformer&  tr)
 
 void
 Object::
+update()
+{
+    switch(kind)
+    {
+  case(ObjectKind::null):
+      break;
+  case(ObjectKind::dot):
+      break;
+  case(ObjectKind::dotset):
+      break;
+  case(ObjectKind::line):
+      break;
+  case(ObjectKind::plane):
+      data.plane.update();
+      break;
+  case(ObjectKind::polygon):
+      data.polygon.update();
+      break;
+  case(ObjectKind::textured_polygon):
+      data.textured_polygon.update();
+      break;
+  case(ObjectKind::box):
+      data.box.update();
+      break;
+  case(ObjectKind::object_list):
+        for(auto&  obj: data.object_list)
+        {
+          obj.update();
+        }
+      break;
+  default:;
+    }
+}
+
+
+void
+Object::
 render(Renderer&  dst) const
 {
     switch(kind)

@@ -52,6 +52,7 @@ Plane
 
   void  change_texture(const Image*  img, const Rect&  rect);
 
+  void  build();
   void  update();
 
   void  transform(const Transformer&  tr);

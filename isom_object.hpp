@@ -91,6 +91,8 @@ public:
 
   void  transform(const Transformer&  tr);
 
+  void  update();
+
   void  render(Renderer&  dst) const;
 
 };

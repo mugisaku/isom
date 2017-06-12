@@ -64,7 +64,7 @@ build(const Point&  base, int  x_width, int  y_width, int  z_width)
 
     for(auto&  pl: planes)
     {
-      pl.update();
+      pl.build();
     }
 }
 
@@ -82,6 +82,17 @@ transform(const Transformer&  tr)
 }
 
 
+void
+Box::
+update()
+{
+    for(auto&  pl: planes)
+    {
+      pl.update();
+    }
+}
+
+
 
 
 void
@@ -91,6 +102,17 @@ render(Renderer&  dst) const
     for(auto&  pl: planes)
     {
       pl.render(dst);
+    }
+}
+
+
+void
+Box::
+render_wire(Renderer&  dst) const
+{
+    for(auto&  pl: planes)
+    {
+      pl.render_wire(dst);
     }
 }
 

@@ -71,6 +71,7 @@ include_directories(/usr/include/SDL2)
 add_executable("testBox${EXTENSION}" testBox.cpp ${SOURCES})
 add_executable("testLineContext${EXTENSION}" testLineContext.cpp ${SOURCES})
 add_executable("testTextureRenderingContext${EXTENSION}" testTextureRenderingContext.cpp ${SOURCES})
+add_executable("testBuilding${EXTENSION}" testBuilding.cpp ${SOURCES})
 
 
 if(EM)

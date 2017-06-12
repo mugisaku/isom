@@ -4,6 +4,12 @@
 
 
 
+Vector
+light(0,0,1);
+
+
+
+
 Renderer::
 Renderer(int  w, int  h)
 {

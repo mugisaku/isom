@@ -63,10 +63,10 @@ public:
 
   void  set_colorkey(uint8_t  r, uint8_t  g, uint8_t  b);
 
-  int  get_width() const{return width;}
+  int  get_width()  const{return  width;}
   int  get_height() const{return height;}
 
-  const Color&  get_color(int  x, int  y) const{return table[width*y+x];}
+  const Color&  get_color(int  x, int  y) const;
 
 };
 

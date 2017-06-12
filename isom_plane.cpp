@@ -39,7 +39,7 @@ change_texture(const Image*  img, const Rect&  rect)
 
 void
 Plane::
-update()
+build()
 {
   bool  xrev = (image_rect.w < 0);
   bool  yrev = (image_rect.h < 0);
@@ -109,6 +109,17 @@ update()
       poly.image = image;
 
       poly.transform(tr);
+    }
+}
+
+
+void
+Plane::
+update()
+{
+    for(auto&  poly: polygons)
+    {
+      poly.update();
     }
 }
 

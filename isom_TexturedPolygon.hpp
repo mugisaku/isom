@@ -3,6 +3,7 @@
 
 
 #include"isom_TextureRenderingContext.hpp"
+#include"isom_FaceRenderingContext.hpp"
 #include"isom_transformer.hpp"
 #include"isom_renderer.hpp"
 
@@ -18,6 +19,8 @@ TexturedPolygon
   TextureVertex  b;
   TextureVertex  c;
 
+  Vector  normal_vector;
+
   TexturedPolygon(): image(nullptr){}
   constexpr TexturedPolygon(const Image*  img, const TextureVertex&  a_,
                                                const TextureVertex&  b_,
@@ -26,6 +29,9 @@ TexturedPolygon
 
 
   TextureRenderingContext  make_rendering_context() const;
+  FaceRenderingContext     make_face_rendering_context() const;
+
+  void  update();
 
   void  transform(const Transformer&  tr);
   void  render(Renderer&  dst) const;
