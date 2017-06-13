@@ -40,9 +40,9 @@ change_angle(int  x, int  y, int  z)
   auto  yi = to_index(y);
   auto  zi = to_index(z);
 
-  angle.x_degree = x;
-  angle.y_degree = y;
-  angle.z_degree = z;
+  angle.x = x;
+  angle.y = y;
+  angle.z = z;
 
   x_sin_value = sin_value_table[xi];
   x_cos_value = cos_value_table[xi];

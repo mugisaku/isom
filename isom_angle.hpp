@@ -10,31 +10,31 @@
 struct
 Angle
 {
-  int  x_degree;
-  int  y_degree;
-  int  z_degree;
+  int  x;
+  int  y;
+  int  z;
 
-  constexpr Angle(int  x=0, int  y=0, int  z=0):
-  x_degree(x), y_degree(y), z_degree(z){}
+  constexpr Angle(int  x_=0, int  y_=0, int  z_=0):
+  x(x_), y(y_), z(z_){}
 
-  void  assign(int  x, int  y, int  z)
+  void  assign(int  x_, int  y_, int  z_)
   {
-    x_degree = x;
-    y_degree = y;
-    z_degree = z;
+    x = x_;
+    y = y_;
+    z = z_;
   }
 
 
   Angle  operator+(const Angle&  rhs) const
   {
-    return Angle(x_degree+rhs.x_degree,
-                 y_degree+rhs.y_degree,
-                 z_degree+rhs.z_degree);
+    return Angle(x+rhs.x,
+                 y+rhs.y,
+                 z+rhs.z);
   }
 
   void  print() const
   {
-    printf("[angle] X:%4d Y:%4d Z:%4d\n",x_degree%360,y_degree%360,z_degree%360);
+    printf("[angle] X:%4d Y:%4d Z:%4d\n",x%360,y%360,z%360);
   }
 
 };

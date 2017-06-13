@@ -60,7 +60,7 @@ render()
 
       dotset.render(renderer);
 
-      renderer.render_image(texture,nullptr,0,0,0);
+      renderer.draw_image(texture,nullptr,0,0,0);
 
       nega_dotset.render(renderer);
 
@@ -144,10 +144,10 @@ process_keydown(int  key)
 
     switch(key)
     {
-  case(SDLK_LEFT ):                                       {a.x_degree -= step;}break;
-  case(SDLK_RIGHT):                                       {a.x_degree += step;}break;
-  case(SDLK_UP   ): if(shifting){a.z_degree += step;} else{a.y_degree += step;}break;
-  case(SDLK_DOWN ): if(shifting){a.z_degree -= step;} else{a.y_degree -= step;}break;
+  case(SDLK_LEFT ):                                {a.x -= step;}break;
+  case(SDLK_RIGHT):                                {a.x += step;}break;
+  case(SDLK_UP   ): if(shifting){a.z += step;} else{a.y += step;}break;
+  case(SDLK_DOWN ): if(shifting){a.z -= step;} else{a.y -= step;}break;
   case(SDLK_SPACE):
       flag = true;
       break;

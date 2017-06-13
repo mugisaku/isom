@@ -1,6 +1,6 @@
 #include"isom_screen.hpp"
 #include"isom_renderer.hpp"
-#include"isom_font.hpp"
+#include"isom_LineContext.hpp"
 #include"isom_image.hpp"
 #include<SDL.h>
 #include<SDL_image.h>
@@ -169,86 +169,6 @@ put_color_safely(uint32_t  color, int  x, int  y)
 
 
 void
-render(const Glyph*  gl, uint32_t  color, int  x, int  y)
-{
-    if(!gl)
-    {
-      return;
-    }
-
-
-  const uint16_t*  p = gl->data;
-
-  x += 2;
-  y += 2;
-
-    for(int  yy = 0;  yy < Glyph::size;  ++yy)
-    {
-      auto  v = *p++;
-
-        for(int  xx = 0;  xx < Glyph::size;  ++xx)
-        {
-            if(v&0x8000)
-            {
-              put_color(color,x+xx,y+yy);
-            }
-
-
-          v <<= 1;
-        }
-    }
-}
-
-
-void
-put_string(const char*  s, uint32_t  color, int  x, int  y)
-{
-  bool  strong_flag = false;
-
-    while(*s)
-    {
-      auto  c = *s++;
-
-        if(c == '*')
-        {
-          strong_flag = !strong_flag;
-        }
-
-      else
-        {
-          render(get_glyph(c),strong_flag? red:color,x,y);
-
-          x += 16;
-        }
-    }
-}
-
-
-void
-put_string(const char16_t*  s, uint32_t  color, int  x, int  y)
-{
-  bool  strong_flag = false;
-
-    while(*s)
-    {
-      auto  c = *s++;
-
-        if(c == '*')
-        {
-          strong_flag = !strong_flag;
-        }
-
-      else
-        {
-          render(get_glyph(c),strong_flag? red:color,x,y);
-
-          x += 16;
-        }
-    }
-}
-
-
-void
 put_renderer(const Renderer&  src, int  x, int  y, int  w, int  h)
 {
     if(!w){w =  src.get_width();}
@@ -264,63 +184,6 @@ put_renderer(const Renderer&  src, int  x, int  y, int  w, int  h)
 }
 
 
-void
-put_image(const Image&  src, const Rect*  src_rect, int  dst_x, int  dst_y)
-{
-  Rect  tmp_rect;
-
-    if(!src_rect)
-    {
-      tmp_rect.x = 0;
-      tmp_rect.y = 0;
-      tmp_rect.w = src.get_width();
-      tmp_rect.h = src.get_height();
-
-      src_rect = &tmp_rect;
-    }
-
-
-  auto&  rect = *src_rect;
-
-    for(int  yy = 0;  yy < rect.h;  ++yy){
-    for(int  xx = 0;  xx < rect.w;  ++xx){
-      auto&  color = src.get_color(rect.x+xx,rect.y+yy);
-
-      put_color(get_color(color.r,color.g,color.b),dst_x+xx,dst_y+yy);
-    }}
-}
-
-
-
-
-void
-draw_rectangle(uint32_t  color, int  x, int  y, int  w, int  h)
-{
-    for(int  n = 0;  n < w;  ++n)
-    {
-      put_color(color,x+n,y    );
-      put_color(color,x+n,y+h-1);
-    }
-
-
-  y += 1;
-  h -= 2;
-
-    while(h--)
-    {
-      put_color(color,x    ,y  );
-      put_color(color,x+w-1,y++);
-    }
-}
-
-
-void
-fill_rectangle(uint32_t  color, int  x, int  y, int  w, int  h)
-{
-  SDL_Rect  rect = {x,y,w,h};
-
-  SDL_FillRect(surface,&rect,color);
-}
 
 
 void

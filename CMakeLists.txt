@@ -60,6 +60,7 @@ set(SOURCES
   isom_box.cpp
   isom_object.cpp
   isom_renderer.cpp
+  isom_view.cpp
   isom_font.cpp
   isom_image.cpp
   isom_screen.cpp

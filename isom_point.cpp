@@ -32,6 +32,14 @@ operator-(const Point&  rhs) const
 
 Point
 Point::
+operator-() const
+{
+  return Point(-x,-y,-z);
+}
+
+
+Point
+Point::
 operator*(double  rate) const
 {
   return Point(x*rate,y*rate,z*rate);

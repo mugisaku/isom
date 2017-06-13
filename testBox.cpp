@@ -7,6 +7,7 @@
 #include"isom_plane.hpp"
 #include"isom_object.hpp"
 #include"isom_renderer.hpp"
+#include"isom_view.hpp"
 #include<random>
 
 
@@ -39,7 +40,10 @@ Image  b_texture;
 Object  obj;
 
 
-Transformer  tr;
+Transformer       tr;
+Transformer  view_tr;
+
+View  view;
 
 
 void
@@ -53,15 +57,19 @@ render()
 
       renderer.clear();
 
-       
+
       Object  o = obj;
 
-      o.transform(tr);
+      o.transform(view_tr);
 
       o.update();
 
       o.render(renderer);
 
+
+      renderer.draw_rect(Rect(0,0,80,80),Color(255,255,255,255));
+      renderer.draw_line(Color(255,255,255,255),40, 0,40,80,2);
+      renderer.draw_line(Color(255,255,255,255), 0,40,80,40,2);
 
       screen::put_renderer(renderer,0,0);
 
@@ -106,21 +114,21 @@ main_loop()
 
           bool  shifting = (SDL_GetModState()&KMOD_SHIFT);
 
-          auto  o = tr.get_angle();
+          auto&  o = view.src_point;
 
             switch(evt.key.keysym.sym)
             {
-          case(SDLK_LEFT ):                                       {o.x_degree -= step;}break;
-          case(SDLK_RIGHT):                                       {o.x_degree += step;}break;
-          case(SDLK_UP   ): if(shifting){o.z_degree -= step;} else{o.y_degree += step;}break;
-          case(SDLK_DOWN ): if(shifting){o.z_degree += step;} else{o.y_degree -= step;}break;
+          case(SDLK_LEFT ):                                {o.x -= step;}break;
+          case(SDLK_RIGHT):                                {o.x += step;}break;
+          case(SDLK_UP   ): if(shifting){o.z -= step;} else{o.y += step;}break;
+          case(SDLK_DOWN ): if(shifting){o.z += step;} else{o.y -= step;}break;
           case(SDLK_SPACE):
               break;
           case(SDLK_1): screen::save_as_bmp();break;
             }
 
-//o.print();
-          tr.change_angle(o);
+
+          view_tr = view.make_transformer();
         }
     }
 

@@ -4,10 +4,12 @@
 
 #include<cstdint>
 #include<vector>
+#include<string>
 #include"isom_point.hpp"
 #include"isom_vector.hpp"
 #include"isom_image.hpp"
 #include"isom_LineContext.hpp"
+#include"isom_font.hpp"
 
 
 
@@ -59,11 +61,18 @@ public:
         Cell&  get_cell(int  x, int  y)      ;
   const Cell&  get_cell(int  x, int  y) const;
 
+  void  put(const Color&  color, int  x, int  y        );
   void  put(const Color&  color, int  x, int  y, int  z);
-  void  put(const LineContext&  lc, const Color&  color);
 
-  void  render_line(const Point&  p0, const Point&  p1, const Color&  color);
-  void  render_image(const Image&  src, const Rect*  src_rect, int  src_z, int  dst_x, int  dst_y);
+  void  draw_image(const Image&  src, const Rect*  src_rect, int  src_z, int  dst_x, int  dst_y);
+
+  void  draw_line(const Color&  color, int  x0, int  y0, int  x1, int  y1, int  interval=0);
+  void  draw_rect(const Rect&  rect, const Color&  color);
+  void  fill_rect(const Rect&  rect, const Color&  color);
+
+  void  draw_glyph(const Glyph*  gl,    const Color&  color, int  x, int  y);
+  void  draw_string(const char*  s,     const Color&  color, int  x, int  y);
+  void  draw_string(const char16_t*  s, const Color&  color, int  x, int  y);
 
 };
 

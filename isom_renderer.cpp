@@ -116,6 +116,21 @@ get_cell(int  x, int  y) const
 
 void
 Renderer::
+put(const Color&  color, int  x, int  y)
+{
+    if(test(x,y))
+    {
+      auto&  cell = get_cell(x,y);
+
+      cell.r = color.r;
+      cell.g = color.g;
+      cell.b = color.b;
+    }
+}
+
+
+void
+Renderer::
 put(const Color&  color, int  x, int  y, int  z)
 {
   y = -y;
@@ -162,21 +177,27 @@ put(const Color&  color, int  x, int  y, int  z)
 
 void
 Renderer::
-put(const LineContext&  lc, const Color&  color)
+draw_line(const Color&  color, int  x0, int  y0, int  x1, int  y1, int  interval)
 {
-  put(color,lc.get_x(),lc.get_y(),lc.get_z());
-}
+  LineContext  lc(x0,y0,0,x1,y1,0);
 
-
-void
-Renderer::
-render_line(const Point&  p0, const Point&  p1, const Color&  color)
-{
-  LineContext  lc(p0,p1);
+  int  n = interval;
 
     for(;;)
     {
-      put(lc,color);
+        if(n)
+        {
+          --n;
+        }
+
+
+        if(!n)
+        {
+          put(color,lc.get_x(),lc.get_y());
+
+          n = interval;
+        }
+
 
         if(lc.is_finished())
         {
@@ -191,7 +212,7 @@ render_line(const Point&  p0, const Point&  p1, const Color&  color)
 
 void
 Renderer::
-render_image(const Image&  src, const Rect*  src_rect, int  src_z, int  dst_x, int  dst_y)
+draw_image(const Image&  src, const Rect*  src_rect, int  src_z, int  dst_x, int  dst_y)
 {
   Rect  tmp_rect;
 
@@ -214,6 +235,137 @@ render_image(const Image&  src, const Rect*  src_rect, int  src_z, int  dst_x, i
 
       put(color,dst_x+xx,-(dst_y+yy),src_z);
     }}
+}
+
+
+
+
+void
+Renderer::
+draw_rect(const Rect&  rect, const Color&  color)
+{
+  int  x = rect.x;
+  int  y = rect.y;
+  int  h = rect.h;
+
+    for(int  n = 0;  n < rect.w;  ++n)
+    {
+      put(color,x+n,y    );
+      put(color,x+n,y+h-1);
+    }
+
+
+  y += 1;
+  h -= 2;
+
+    while(h--)
+    {
+      put(color,x         ,y  );
+      put(color,x+rect.w-1,y++);
+    }
+}
+
+
+void
+Renderer::
+fill_rect(const Rect&  rect, const Color&  color)
+{
+    for(int  y = 0;  y < rect.h;  ++y){
+    for(int  x = 0;  x < rect.w;  ++x){
+      put(color,rect.x+x,rect.y+y);
+    }}
+}
+
+
+
+
+void
+Renderer::
+draw_glyph(const Glyph*  gl, const Color&  color, int  x, int  y)
+{
+    if(!gl)
+    {
+      return;
+    }
+
+
+  const uint16_t*  p = gl->data;
+
+  x += 2;
+  y += 2;
+
+    for(int  yy = 0;  yy < Glyph::size;  ++yy)
+    {
+      auto  v = *p++;
+
+        for(int  xx = 0;  xx < Glyph::size;  ++xx)
+        {
+
+            if(v&0x8000)
+            {
+              put(color,x+xx,y+yy);
+            }
+
+
+          v <<= 1;
+        }
+    }
+}
+
+
+namespace{
+const Color
+red(255,0,0,255);
+}
+
+
+void
+Renderer::
+draw_string(const char*  s, const Color&  color, int  x, int  y)
+{
+  bool  strong_flag = false;
+
+    while(*s)
+    {
+      auto  c = *s++;
+
+        if(c == '*')
+        {
+          strong_flag = !strong_flag;
+        }
+
+      else
+        {
+          draw_glyph(get_glyph(c),strong_flag? red:color,x,y);
+
+          x += 16;
+        }
+    }
+}
+
+
+void
+Renderer::
+draw_string(const char16_t*  s, const Color&  color, int  x, int  y)
+{
+  bool  strong_flag = false;
+
+    while(*s)
+    {
+      auto  c = *s++;
+
+        if(c == '*')
+        {
+          strong_flag = !strong_flag;
+        }
+
+      else
+        {
+          draw_glyph(get_glyph(c),strong_flag? red:color,x,y);
+
+          x += 16;
+        }
+    }
 }
 
 

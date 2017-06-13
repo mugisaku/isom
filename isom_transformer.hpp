@@ -37,7 +37,7 @@ public:
   Transformer();
 
   void  change_angle(int  x, int  y, int  z);
-  void  change_angle(const Angle&  a){change_angle(a.x_degree,a.y_degree,a.z_degree);}
+  void  change_angle(const Angle&  a){change_angle(a.x,a.y,a.z);}
 
   void  change_scaling_rate(double  x, double  y, double  z);
 
