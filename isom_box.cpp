@@ -7,64 +7,53 @@ void
 Box::
 build(const Point&  base, int  x_width, int  y_width, int  z_width)
 {
+  Transformer  tr;
+
+
   auto  pl = &get_top();
 
-  pl->direction = PlaneDirection::bottom_left;
-  pl->base = base+Point(x_width,y_width,z_width);
-  pl->x_width = x_width;
-  pl->y_width = z_width;
-  pl->angle.assign(270,0,0);
+  tr.change_angle(90,0,0);
+  tr.set_rotation_flag();
+
+  pl->build_x(Point(base.x,base.y-z_width,base.z+y_width),x_width,z_width,false);
+
+  pl->transform(tr);
+
 
 
   pl = &get_right();
 
-  pl->direction = PlaneDirection::bottom_left;
-  pl->base = base+Point(x_width,y_width,z_width);
-  pl->x_width = z_width;
-  pl->y_width = y_width;
-  pl->angle.assign(0,90,0);
+  pl->build_z(Point(base.x,base.y,base.z),z_width,y_width,false);
 
 
   pl = &get_front();
 
-  pl->direction = PlaneDirection::bottom_left;
-  pl->base = base+Point(x_width,y_width,z_width);
-  pl->x_width = x_width;
-  pl->y_width = y_width;
-
-  pl->angle.assign(0,0,0);
+  pl->build_x(Point(base.x,base.y,base.z+z_width),x_width,y_width,false);
 
 
 
   pl = &get_bottom();
 
-  pl->direction = PlaneDirection::top_right;
-  pl->base = base;
-  pl->x_width = x_width;
-  pl->y_width = z_width;
-  pl->angle.assign(270,0,0);
+  tr.change_angle(90,0,0);
+  tr.set_rotation_flag();
+
+  pl->build_x(Point(base.x,base.y,base.z),x_width,z_width,true);
+
+  pl->transform(tr);
 
 
   pl = &get_left();
 
-  pl->direction = PlaneDirection::top_right;
-  pl->base = base;
-  pl->x_width = z_width;
-  pl->y_width = y_width;
-  pl->angle.assign(0,90,0);
+  pl->build_z(Point(base.x+x_width,base.y+y_width,base.z),z_width,y_width,true);
 
 
   pl = &get_back();
 
-  pl->direction = PlaneDirection::top_right;
-  pl->base = base;
-  pl->x_width = x_width;
-  pl->y_width = y_width;
-  pl->angle.assign(0,0,0);
+  pl->build_x(Point(base.x,base.y+y_width,base.z),x_width,y_width,true);
 
     for(auto&  pl: planes)
     {
-      pl.build();
+//      pl.build();
     }
 }
 

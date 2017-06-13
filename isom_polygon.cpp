@@ -38,30 +38,33 @@ void
 Polygon::
 render(Renderer&  dst) const
 {
+    if(normal_vector.z < 0)
+    {
+      return;
+    }
+
+
   auto  r = Vector::dot_product(light,normal_vector);
 
-    if(r > 0)
+  int  l = 128+(127*r);
+
+  Color  color(l,0,0,255);
+
+  FaceRenderingContext  ctx(Dot(a,color),Dot(b,color),Dot(c,color));
+
+    for(;;)
     {
-      auto  f = 255*r;
+      auto&  p = ctx.get_plotter();
 
-      Color  color(f,0,0,255);
+      dst.put(ctx.get_color(),p.get_x(),p.get_y(),p.get_z());
 
-      FaceRenderingContext  ctx(Dot(a,color),Dot(b,color),Dot(c,color));
-
-        for(;;)
+        if(ctx.is_finished())
         {
-          auto&  p = ctx.get_plotter();
-
-          dst.put(ctx.get_color(),p.get_x(),p.get_y(),p.get_z());
-
-            if(ctx.is_finished())
-            {
-              break;
-            }
-
-
-          ctx.step();
+          break;
         }
+
+
+      ctx.step();
     }
 }
 

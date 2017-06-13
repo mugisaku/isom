@@ -69,6 +69,8 @@ render()
 
       tmplane.transform(tr);
 
+      tmplane.update();
+
       tmplane.render_wire(renderer);
 
       screen::put_renderer(renderer,0,0);
@@ -221,12 +223,12 @@ main(int  argc, char**  argv)
 
   texture.open("lena_std.png");
 
+  plane.build_x(Point(0,0,0),sz,sz,true);
+
   plane.image = &texture;
-  plane.image_rect = Rect(0,0,sz,sz);
-  plane.direction = PlaneDirection::top_right;
-  plane.x_width = sz;
-  plane.y_width = sz;
-  plane.center.assign(sz/2,sz/2,0);
+
+  plane.preset_uv(Rect(0,0,sz,sz),true);
+
 
   plane.update();
 

@@ -22,9 +22,9 @@ TexturedPolygon
   Vector  normal_vector;
 
   TexturedPolygon(): image(nullptr){}
-  constexpr TexturedPolygon(const Image*  img, const TextureVertex&  a_,
-                                               const TextureVertex&  b_,
-                                               const TextureVertex&  c_):
+  TexturedPolygon(const Image*  img, const TextureVertex&  a_,
+                                     const TextureVertex&  b_,
+                                     const TextureVertex&  c_):
   image(img), a(a_), b(b_), c(c_){}
 
 

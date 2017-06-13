@@ -7,108 +7,132 @@
 
 
 
-Plane::
-Plane(const Image*  img, const Rect&  img_rect,
-      const Point&  base_, PlaneDirection  dir, int  x_width_,int  y_width_,
-      const Point&  center_, const Angle&  angle_):
-image(img),
-image_rect(img_rect),
-base(base_),
-direction(dir),
-x_width(x_width_),
-y_width(y_width_),
-center(center_),
-angle(angle_)
-{
-  update();
-}
-
-
-
-
 void
 Plane::
-change_texture(const Image*  img, const Rect&  rect)
+build_x(const Point&  base, int  w, int  h, bool  clockwise)
 {
-  image      =  img;
-  image_rect = rect;
-
-  update();
-}
-
-
-void
-Plane::
-build()
-{
-  bool  xrev = (image_rect.w < 0);
-  bool  yrev = (image_rect.h < 0);
-
-  int  w = std::abs(image_rect.w);
-  int  h = std::abs(image_rect.h);
-
-  int    left = image_rect.x    ;
-  int   right = image_rect.x+w-1;
-  int     top = image_rect.y    ;
-  int  bottom = image_rect.y+h-1;
-
-    if(xrev){std::swap(left, right);}
-    if(yrev){std::swap( top,bottom);}
-
-
-    switch(direction)
+    if(clockwise)
     {
-  case(PlaneDirection::top_left):
-      polygons[0].a.assign(Point(base.x-x_width,base.y        ,base.z), left,bottom);
-      polygons[0].b.assign(Point(base.x-x_width,base.y+y_width,base.z), left,   top);
-      polygons[0].c.assign(Point(base.x        ,base.y+y_width,base.z),right,   top);
+      polygons[0].a.Point::assign(base.x  ,base.y  ,base.z);
+      polygons[0].b.Point::assign(base.x+w,base.y  ,base.z);
+      polygons[0].c.Point::assign(base.x+w,base.y-h,base.z);
+      polygons[1].a.Point::assign(base.x  ,base.y  ,base.z);
+      polygons[1].b.Point::assign(base.x+w,base.y-h,base.z);
+      polygons[1].c.Point::assign(base.x  ,base.y-h,base.z);
+    }
 
-      polygons[1].a.assign(Point(base.x-x_width,base.y        ,base.z), left,bottom);
-      polygons[1].b.assign(Point(base.x        ,base.y+y_width,base.z),   right,top);
-      polygons[1].c.assign(Point(base.x        ,base.y        ,base.z),right,bottom);
-      break;
-  case(PlaneDirection::top_right):
-      polygons[0].a.assign(Point(base.x        ,base.y        ,base.z), left,bottom);
-      polygons[0].b.assign(Point(base.x        ,base.y+y_width,base.z), left,   top);
-      polygons[0].c.assign(Point(base.x+x_width,base.y+y_width,base.z),right,   top);
-
-      polygons[1].a.assign(Point(base.x        ,base.y        ,base.z), left,bottom);
-      polygons[1].b.assign(Point(base.x+x_width,base.y+y_width,base.z),   right,top);
-      polygons[1].c.assign(Point(base.x+x_width,base.y        ,base.z),right,bottom);
-      break;
-  case(PlaneDirection::bottom_left):
-      polygons[0].a.assign(Point(base.x-x_width,base.y-y_width,base.z), left,bottom);
-      polygons[0].b.assign(Point(base.x-x_width,base.y        ,base.z), left,   top);
-      polygons[0].c.assign(Point(base.x        ,base.y        ,base.z),right,   top);
-
-      polygons[1].a.assign(Point(base.x-x_width,base.y-y_width,base.z), left,bottom);
-      polygons[1].b.assign(Point(base.x        ,base.y        ,base.z),   right,top);
-      polygons[1].c.assign(Point(base.x        ,base.y-y_width,base.z),right,bottom);
-      break;
-  case(PlaneDirection::bottom_right):
-      polygons[0].a.assign(Point(base.x        ,base.y-y_width,base.z), left,bottom);
-      polygons[0].b.assign(Point(base.x        ,base.y        ,base.z), left,   top);
-      polygons[0].c.assign(Point(base.x+x_width,base.y        ,base.z),right,   top);
-
-      polygons[1].a.assign(Point(base.x        ,base.y-y_width,base.z), left,bottom);
-      polygons[1].b.assign(Point(base.x+x_width,base.y        ,base.z),   right,top);
-      polygons[1].c.assign(Point(base.x+x_width,base.y-y_width,base.z),right,bottom);
-      break;
+  else
+    {
+      polygons[0].a.Point::assign(base.x  ,base.y  ,base.z);
+      polygons[0].b.Point::assign(base.x+w,base.y  ,base.z);
+      polygons[0].c.Point::assign(base.x+w,base.y+h,base.z);
+      polygons[1].a.Point::assign(base.x  ,base.y  ,base.z);
+      polygons[1].b.Point::assign(base.x+w,base.y+h,base.z);
+      polygons[1].c.Point::assign(base.x  ,base.y+h,base.z);
     }
 
 
-  Transformer  tr;
+  update();
+}
 
-  tr.change_angle(angle);
-  tr.change_center(base+center);
 
-  tr.set_rotation_flag();
-
-    for(auto&  poly: polygons)
+void
+Plane::
+build_y(const Point&  base, int  w, int  h, bool  clockwise)
+{
+    if(clockwise)
     {
-      poly.image = image;
+      polygons[0].a.Point::assign(base.x,base.y  ,base.z  );
+      polygons[0].b.Point::assign(base.x,base.y+w,base.z  );
+      polygons[0].c.Point::assign(base.x,base.y+w,base.z-h);
+      polygons[1].a.Point::assign(base.x,base.y  ,base.z  );
+      polygons[1].b.Point::assign(base.x,base.y+w,base.z-h);
+      polygons[1].c.Point::assign(base.x,base.y  ,base.z-h);
+    }
 
-      poly.transform(tr);
+  else
+    {
+      polygons[0].a.Point::assign(base.x,base.y  ,base.z  );
+      polygons[0].b.Point::assign(base.x,base.y+w,base.z  );
+      polygons[0].c.Point::assign(base.x,base.y+w,base.z+h);
+      polygons[1].a.Point::assign(base.x,base.y  ,base.z  );
+      polygons[1].b.Point::assign(base.x,base.y+w,base.z+h);
+      polygons[1].c.Point::assign(base.x,base.y  ,base.z+h);
+    }
+
+
+  update();
+}
+
+
+void
+Plane::
+build_z(const Point&  base, int  w, int  h, bool  clockwise)
+{
+    if(clockwise)
+    {
+      polygons[0].a.Point::assign(base.x,base.y  ,base.z  );
+      polygons[0].b.Point::assign(base.x,base.y  ,base.z+w);
+      polygons[0].c.Point::assign(base.x,base.y-h,base.z+w);
+      polygons[1].a.Point::assign(base.x,base.y  ,base.z  );
+      polygons[1].b.Point::assign(base.x,base.y-h,base.z+w);
+      polygons[1].c.Point::assign(base.x,base.y-h,base.z  );
+    }
+
+  else
+    {
+      polygons[0].a.Point::assign(base.x,base.y  ,base.z  );
+      polygons[0].b.Point::assign(base.x,base.y  ,base.z+w);
+      polygons[0].c.Point::assign(base.x,base.y+h,base.z+w);
+      polygons[1].a.Point::assign(base.x,base.y  ,base.z  );
+      polygons[1].b.Point::assign(base.x,base.y+h,base.z+w);
+      polygons[1].c.Point::assign(base.x,base.y+h,base.z  );
+    }
+
+
+  update();
+}
+
+
+
+
+void
+Plane::
+preset_uv(const Rect&  rect, bool  clockwise)
+{
+  bool  x_swap = (rect.w < 0);
+  bool  y_swap = (rect.h < 0);
+
+  int  w = std::abs(rect.w);
+  int  h = std::abs(rect.h);
+
+  int    left = rect.x    ;
+  int   right = rect.x+w-1;
+  int     top = rect.y    ;
+  int  bottom = rect.y+h-1;
+
+    if(x_swap){std::swap(left, right);}
+    if(y_swap){std::swap( top,bottom);}
+
+
+    if(clockwise)
+    {
+      polygons[0].a.PointUV::assign( left,   top);
+      polygons[0].b.PointUV::assign(right,   top);
+      polygons[0].c.PointUV::assign(right,bottom);
+      polygons[1].a.PointUV::assign( left,   top);
+      polygons[1].b.PointUV::assign(right,bottom);
+      polygons[1].c.PointUV::assign( left,bottom);
+    }
+
+  else
+    {
+      polygons[0].a.PointUV::assign( left,bottom);
+      polygons[0].b.PointUV::assign(right,bottom);
+      polygons[0].c.PointUV::assign(right,   top);
+      polygons[1].a.PointUV::assign( left,bottom);
+      polygons[1].b.PointUV::assign(right,   top);
+      polygons[1].c.PointUV::assign( left,   top);
     }
 }
 
@@ -119,6 +143,8 @@ update()
 {
     for(auto&  poly: polygons)
     {
+      poly.image = image;
+
       poly.update();
     }
 }

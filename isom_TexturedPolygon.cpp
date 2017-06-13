@@ -29,17 +29,12 @@ make_face_rendering_context() const
 {
   auto  r = Vector::dot_product(light,normal_vector);
 
-  auto  f = 255*r;
-
-    if(f < 0)
-    {
-      f = 255-f;
-    }
+  int  l = 128+(127*r);
 
 
-  return FaceRenderingContext(Dot(a,Color(f,0,0,255)),
-                              Dot(b,Color(f,0,0,255)),
-                              Dot(c,Color(f,0,0,255)));
+  return FaceRenderingContext(Dot(a,Color(l,0,0,255)),
+                              Dot(b,Color(l,0,0,255)),
+                              Dot(c,Color(l,0,0,255)));
 }
 
 
@@ -65,6 +60,12 @@ void
 TexturedPolygon::
 render(Renderer&  dst) const
 {
+    if(normal_vector.z < 0)
+    {
+//      return;
+    }
+
+
     if(image)
     {
       auto  ctx = make_rendering_context();

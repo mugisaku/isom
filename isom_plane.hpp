@@ -12,47 +12,24 @@
 
 
 
-enum class
-PlaneDirection
-{
-  top_left,
-  top_right,
-  bottom_left,
-  bottom_right,
-
-};
-
-
 struct
 Plane
 {
   const Image*  image;
 
-  Rect  image_rect;
-
-  Point  base;
-
-  PlaneDirection  direction;
-
-  int  x_width;
-  int  y_width;
-
-  Point  center;
-
-  Angle  angle;
-
   TexturedPolygon  polygons[2];
 
 
-  Plane(): image(nullptr), x_width(0), y_width(0){}
-  Plane(const Image*  img, const Rect&  img_rect,
-        const Point&  base_, PlaneDirection  dir, int  x_width_,int  y_width_,
-        const Point&  center_, const Angle&  angle_);
+  Plane(): image(nullptr){}
 
 
-  void  change_texture(const Image*  img, const Rect&  rect);
+  void  build_x(const Point&  base, int  w, int  h, bool  clockwise);
+  void  build_y(const Point&  base, int  w, int  h, bool  clockwise);
+  void  build_z(const Point&  base, int  w, int  h, bool  clockwise);
 
-  void  build();
+  void  preset_uv(const Rect&  rect, bool  clockwise);
+
+
   void  update();
 
   void  transform(const Transformer&  tr);

@@ -148,9 +148,7 @@ main(int  argc, char**  argv)
 
   eng = std::default_random_engine(rdev());
 
-
-  light.normalize();
-
+light.normalize();
   obj = Object(ObjectList());
 
   Box  box;
@@ -160,28 +158,13 @@ main(int  argc, char**  argv)
 
   const Image*  ptr = nullptr;
 
-  box.get_bottom().change_texture(ptr,Rect(0,0,64,64));
-  box.get_left().change_texture(ptr,Rect(0,0,64,64));
-  box.get_back().change_texture(ptr,Rect(0,0,64,64));
-
-  box.get_top().change_texture(ptr,Rect(0,0,64,64));
-  box.get_right().change_texture(ptr,Rect(0,0,64,64));
-  box.get_front().change_texture(ptr,Rect(0,0,64,64));
-
-
   obj->object_list.emplace_back(std::move(box));
 
-/*
-  Polygon  poly(Dot(Point( 0, 0, 0),Color(0xFF,0   ,0xFF,0xFF)),
-                Dot(Point(80,40, 0),Color(0x00,0xFF,0xFF,0xFF)),
-                Dot(Point( 0,80,40),Color(0xFF,0   ,0xFF,0xFF)));
+  Polygon  poly(Dot(Point(  0,0,  0),Color()),
+                Dot(Point(100,0,  0),Color()),
+                Dot(Point(  0,0,100),Color()));
 
-  Polygon  poly(Dot(Point( 0,0, 0),Color(0xFF,0   ,0xFF,0xFF)),
-                Dot(Point(100,0, 0),Color(0x00,0xFF,0xFF,0xFF)),
-                Dot(Point( 0,0,100),Color(0xFF,0   ,0xFF,0xFF)));
-
-  obj->object_list.emplace_back(std::move(poly));
-*/
+//  obj->object_list.emplace_back(std::move(poly));
   
 
   tr.change_offset(sz*2,-sz*2,0);
