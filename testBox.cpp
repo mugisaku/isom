@@ -7,8 +7,6 @@
 #include"isom_plane.hpp"
 #include"isom_object.hpp"
 #include"isom_renderer.hpp"
-#include"isom_view.hpp"
-#include<random>
 
 
 #ifdef EMSCRIPTEN
@@ -25,25 +23,17 @@ bool  needed_to_redraw = true;
 constexpr int  sz = 64;
 
 
-std::default_random_engine  eng;
-std::uniform_real_distribution<>  dist(-100,100);
-
-
 Renderer
 renderer(screen::width,screen::height);
 
 
-Image  a_texture;
-Image  b_texture;
+Image  texture;
 
 
 Object  obj;
 
 
-Transformer       tr;
-Transformer  view_tr;
-
-View  view;
+Transformer  tr;
 
 
 void
@@ -60,16 +50,12 @@ render()
 
       Object  o = obj;
 
-      o.transform(view_tr);
+      o.transform(tr);
 
       o.update();
 
       o.render(renderer);
 
-
-      renderer.draw_rect(Rect(0,0,80,80),Color(255,255,255,255));
-      renderer.draw_line(Color(255,255,255,255),40, 0,40,80,2);
-      renderer.draw_line(Color(255,255,255,255), 0,40,80,40,2);
 
       screen::put_renderer(renderer,0,0);
 
@@ -114,7 +100,7 @@ main_loop()
 
           bool  shifting = (SDL_GetModState()&KMOD_SHIFT);
 
-          auto&  o = view.src_point;
+          auto  o = tr.get_angle();
 
             switch(evt.key.keysym.sym)
             {
@@ -128,7 +114,7 @@ main_loop()
             }
 
 
-          view_tr = view.make_transformer();
+          tr.change_angle(o);
         }
     }
 
@@ -147,32 +133,44 @@ main(int  argc, char**  argv)
 {
   screen::open();
 
-  a_texture.open("expandmetal.png");
-  b_texture.open("lena_std.png");
+  texture.open("expandmetal.png");
 
-  a_texture.set_colorkey(0,0,0);
+  texture.set_colorkey(0,0,0);
 
-  std::random_device  rdev;
 
-  eng = std::default_random_engine(rdev());
+  light.normalize();
 
-light.normalize();
   obj = Object(ObjectList());
 
-  Box  box;
+  Box  a_box;
+  Box  b_box;
 
-  box.build(Point(0,0,0),80,80,40);
+  a_box.build(Point(  0,0,0),80,80,40);
+  b_box.build(Point(100,0,0),80,80,40);
 
+  b_box.get_top().image = &texture;
+  b_box.get_top().preset_uv(Rect(0,0,sz,sz),false);
 
-  const Image*  ptr = nullptr;
+  b_box.get_front().image = &texture;
+  b_box.get_front().preset_uv(Rect(0,0,sz,sz),false);
 
-  obj->object_list.emplace_back(std::move(box));
+  b_box.get_left().image = &texture;
+  b_box.get_left().preset_uv(Rect(0,0,sz,sz),true);
 
-  Polygon  poly(Dot(Point(  0,0,  0),Color()),
-                Dot(Point(100,0,  0),Color()),
-                Dot(Point(  0,0,100),Color()));
+  b_box.get_right().image = &texture;
+  b_box.get_right().preset_uv(Rect(0,0,sz,sz),false);
 
-//  obj->object_list.emplace_back(std::move(poly));
+  b_box.get_bottom().image = &texture;
+  b_box.get_bottom().preset_uv(Rect(0,0,sz,sz),true);
+
+  obj->object_list.emplace_back(std::move(a_box));
+  obj->object_list.emplace_back(std::move(b_box));
+
+  Polygon  poly(Dot(Point(100, 0, 0),red),
+                Dot(Point(180,80, 0),green),
+                Dot(Point(100, 0,40),blue));
+
+  obj->object_list.emplace_back(std::move(poly));
   
 
   tr.change_offset(sz*2,-sz*2,0);

@@ -32,9 +32,9 @@ make_face_rendering_context() const
   int  l = 128+(127*r);
 
 
-  return FaceRenderingContext(Dot(a,Color(l,0,0,255)),
-                              Dot(b,Color(l,0,0,255)),
-                              Dot(c,Color(l,0,0,255)));
+  return FaceRenderingContext(Dot(a,Color(l,l,l,255)),
+                              Dot(b,Color(l,l,l,255)),
+                              Dot(c,Color(l,l,l,255)));
 }
 
 

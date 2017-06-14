@@ -61,6 +61,7 @@ set(SOURCES
   isom_object.cpp
   isom_renderer.cpp
   isom_view.cpp
+  isom_ViewController.cpp
   isom_font.cpp
   isom_image.cpp
   isom_screen.cpp

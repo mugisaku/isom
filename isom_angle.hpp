@@ -40,6 +40,25 @@ Angle
 };
 
 
+/*
+inline void
+print_angle_table()
+{
+    for(int  i = 0;  i <= 360;  i += 5)
+    {
+      printf("%10f,//%3d\n",std::sin(to_radian(i)),i);
+    }
+
+
+  printf("-----\n");
+
+    for(int  i = 0;  i <= 360;  i += 5)
+    {
+      printf("%10f,//%3d\n",std::cos(to_radian(i)),i);
+    }
+  fflush(stdout);
+}
+*/
 
 
 #endif

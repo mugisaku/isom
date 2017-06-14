@@ -31,6 +31,15 @@ Color
 };
 
 
+constexpr Color   white(0xFF,0xFF,0xFF,0xFF);
+constexpr Color    gray(0x7F,0x7F,0x7F,0xFF);
+constexpr Color   black(0x00,0x00,0x00,0xFF);
+constexpr Color     red(0xFF,0x00,0x00,0xFF);
+constexpr Color   green(0x00,0xFF,0x00,0xFF);
+constexpr Color    blue(0x00,0x00,0xFF,0xFF);
+constexpr Color  yellow(0xFF,0xFF,0x00,0xFF);
+
+
 struct
 Rect
 {
@@ -39,8 +48,17 @@ Rect
   int  w;
   int  h;
 
-  constexpr Rect(int  x_=0,int  y_=0,int  w_=0,int  h_=0):
+  constexpr Rect(int  x_=0, int  y_=0, int  w_=0, int  h_=0):
   x(x_), y(y_), w(w_), h(h_){}
+
+
+  constexpr bool  test(int  x_, int  y_) const
+  {
+    return((x_ >= (x  )) &&
+           (y_ >= (y  )) &&
+           (x_ <  (x+w)) &&
+           (y_ <  (y+h)));
+  }
 
 };
 

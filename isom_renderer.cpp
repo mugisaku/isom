@@ -313,12 +313,6 @@ draw_glyph(const Glyph*  gl, const Color&  color, int  x, int  y)
 }
 
 
-namespace{
-const Color
-red(255,0,0,255);
-}
-
-
 void
 Renderer::
 draw_string(const char*  s, const Color&  color, int  x, int  y)

@@ -48,7 +48,7 @@ render(Renderer&  dst) const
 
   int  l = 128+(127*r);
 
-  Color  color(l,0,0,255);
+  Color  color(l,l,l,255);
 
   FaceRenderingContext  ctx(Dot(a,color),Dot(b,color),Dot(c,color));
 
