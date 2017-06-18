@@ -18,7 +18,7 @@ DotSet
   List&  operator *(){return  dot_list;}
   List*  operator->(){return &dot_list;}
 
-  void  transform(const Transformer&  tr);
+  void  relativize(const Point&  base);
 
   void  render(Renderer&  dst) const;
 

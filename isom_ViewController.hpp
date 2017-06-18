@@ -35,13 +35,16 @@ ViewController
   int*  x_target;
   int*  y_target;
 
+  bool  y_reversing;
+
   static Rect  make_rect(int  x, int  y);
 
 public:
-  ViewController(const char*  title_, int  x, int  y, int&  src_x_target_,
-                                                      int&  src_y_target_,
-                                                      int&  dst_x_target_,
-                                                      int&  dst_y_target_);
+  ViewController(const char*  title_, int  x, int  y,
+                 int&  src_x_target_,
+                 int&  src_y_target_,
+                 int&  dst_x_target_,
+                 int&  dst_y_target_, bool  y_rev);
 
   bool  test(const Mouse&  mouse) const;
 

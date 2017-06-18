@@ -15,9 +15,9 @@ transform(const Transformer&  tr)
 
 void
 Dot::
-render(Renderer&  dst) const
+render(Renderer&  dst, uint32_t  id) const
 {
-  dst.put(color,x,y,z);
+  dst.put(color,x,y,z,id);
 }
 
 

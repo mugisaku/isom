@@ -12,10 +12,12 @@
 struct
 View
 {
+  Point  src_point;
+  Point  dst_point;
+
   Angle  angle;
 
-  Point  dst_point;
-  Point  src_point;
+  void  update();
 
   Transformer  make_transformer() const;
 

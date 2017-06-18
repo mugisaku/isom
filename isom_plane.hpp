@@ -7,7 +7,7 @@
 #include"isom_renderer.hpp"
 #include"isom_image.hpp"
 #include"isom_transformer.hpp"
-#include"isom_TexturedPolygon.hpp"
+#include"isom_polygon.hpp"
 
 
 
@@ -17,7 +17,7 @@ Plane
 {
   const Image*  image;
 
-  TexturedPolygon  polygons[2];
+  Polygon  polygons[2];
 
 
   Plane(): image(nullptr){}
@@ -34,8 +34,8 @@ Plane
 
   void  transform(const Transformer&  tr);
 
-  void  render(Renderer&  dst) const;
-  void  render_wire(Renderer&  dst) const;
+  void  produce_face_dotset(DotSet&  set) const;
+  void  produce_wire_dotset(DotSet&  set) const;
 
 };
 

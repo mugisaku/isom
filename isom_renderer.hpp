@@ -20,14 +20,14 @@ struct Plane;
 struct
 Cell: public Color
 {
-  int32_t  z;
-
-  const Plane*  plane;
+   int32_t   z;
+  uint32_t  id;
 
 };
 
 
-extern Vector  light;
+extern Vector          light;
+extern Color   ambient_color;
 
 
 class
@@ -35,36 +35,40 @@ Renderer
 {
   std::vector<Cell>  table;
 
-  int  width;
-  int  height;
+  int  x_base;
+  int  y_base;
+
+  int  x_width;
+  int  y_width;
+
+  int    left;
+  int   right;
+  int     top;
+  int  bottom;
 
 public:
-  Renderer(int  w=0, int  h=0);
+  Renderer(int  x=0, int  y=0, int  w=0, int  h=0);
 
   void  clear();
 
-  void  resize(int  w, int  h);
+  int  get_x_base() const{return x_base;}
+  int  get_y_base() const{return y_base;}
 
-  int   get_width() const;
-  int   get_height() const;
+  void  change_base_point(int  x, int  y);
 
-  bool  test(int  x, int  y) const
-  {
-    return((x >=     0) &&
-           (y >=     0) &&
-           (x <  width) &&
-           (y < height));
-  }
+  int  get_x_width() const{return x_width;}
+  int  get_y_width() const{return y_width;}
 
-  void   set_cell(const Cell&  src, int  x, int  y);
+  bool  test_2d(int  x, int  y) const;
+  bool  test_3d(int  x, int  y) const;
 
         Cell&  get_cell(int  x, int  y)      ;
   const Cell&  get_cell(int  x, int  y) const;
 
-  void  put(const Color&  color, int  x, int  y        );
-  void  put(const Color&  color, int  x, int  y, int  z);
+  void  put(const Color&  color, int  x, int  y                         );
+  void  put(const Color&  color, int  x, int  y, int  z, uint32_t  id_=0);
 
-  void  draw_image(const Image&  src, const Rect*  src_rect, int  src_z, int  dst_x, int  dst_y);
+  void  draw_image(const Image&  src, const Rect*  src_rect, int  dst_x, int  dst_y);
 
   void  draw_line(const Color&  color, int  x0, int  y0, int  x1, int  y1, int  interval=0);
   void  draw_rect(const Rect&  rect, const Color&  color);

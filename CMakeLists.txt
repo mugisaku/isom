@@ -47,21 +47,20 @@ endif()
 
 set(SOURCES
   isom_LineContext.cpp
-  isom_FaceRenderingContext.cpp
-  isom_TextureRenderingContext.cpp
   isom_point.cpp
   isom_transformer.cpp
   isom_dot.cpp
   isom_DotSet.cpp
   isom_line.cpp
   isom_polygon.cpp
-  isom_TexturedPolygon.cpp
   isom_plane.cpp
   isom_box.cpp
   isom_object.cpp
   isom_renderer.cpp
+  isom_renderer__draw.cpp
   isom_view.cpp
   isom_ViewController.cpp
+  isom_math.cpp
   isom_font.cpp
   isom_image.cpp
   isom_screen.cpp

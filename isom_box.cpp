@@ -13,9 +13,10 @@ build(const Point&  base, int  x_width, int  y_width, int  z_width)
   auto  pl = &get_top();
 
   tr.change_angle(90,0,0);
+  tr.change_center(Point(base.x,base.y+y_width,base.z+z_width));
   tr.set_rotation_flag();
 
-  pl->build_x(Point(base.x,base.y-z_width,base.z+y_width),x_width,z_width,false);
+  pl->build_x(Point(base.x,base.y+y_width,base.z+z_width),x_width,z_width,false);
 
   pl->transform(tr);
 
@@ -35,6 +36,7 @@ build(const Point&  base, int  x_width, int  y_width, int  z_width)
   pl = &get_bottom();
 
   tr.change_angle(90,0,0);
+  tr.change_center(Point(base.x,base.y,base.z));
   tr.set_rotation_flag();
 
   pl->build_x(Point(base.x,base.y,base.z),x_width,z_width,true);
@@ -50,11 +52,6 @@ build(const Point&  base, int  x_width, int  y_width, int  z_width)
   pl = &get_back();
 
   pl->build_x(Point(base.x,base.y+y_width,base.z),x_width,y_width,true);
-
-    for(auto&  pl: planes)
-    {
-//      pl.build();
-    }
 }
 
 
@@ -86,22 +83,22 @@ update()
 
 void
 Box::
-render(Renderer&  dst) const
+render(Renderer&  dst, uint32_t  id) const
 {
     for(auto&  pl: planes)
     {
-      pl.render(dst);
+//      pl.render(dst,id);
     }
 }
 
 
 void
 Box::
-render_wire(Renderer&  dst) const
+render_wire(Renderer&  dst, uint32_t  id) const
 {
     for(auto&  pl: planes)
     {
-      pl.render_wire(dst);
+//      pl.render_wire(dst,id);
     }
 }
 

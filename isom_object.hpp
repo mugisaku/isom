@@ -7,14 +7,8 @@
 #include"isom_renderer.hpp"
 #include"isom_transformer.hpp"
 #include"isom_image.hpp"
-#include"isom_plane.hpp"
-#include"isom_dot.hpp"
-#include"isom_DotSet.hpp"
 #include"isom_line.hpp"
 #include"isom_polygon.hpp"
-#include"isom_TexturedPolygon.hpp"
-#include"isom_box.hpp"
-#include<list>
 
 
 
@@ -23,37 +17,25 @@ enum class
 ObjectKind
 {
   null,
-  dot,
-  dotset,
   line,
   polygon,
-  textured_polygon,
-  plane,
-  box,
-  object_list,
+  object_array,
 
 };
 
 
 struct Object;
 
-using ObjectList = std::list<Object>;
+using ObjectArray = std::vector<Object>;
 
 
 union
 ObjectData
 {
-  Dot          dot;
-  DotSet    dotset;
   Line        line;
-  Plane      plane;
+  Polygon  polygon;
 
-  Polygon                   polygon;
-  TexturedPolygon  textured_polygon;
-
-  Box  box;
-
-  ObjectList  object_list;  
+  ObjectArray    object_array;
 
    ObjectData(){}
   ~ObjectData(){}
@@ -64,19 +46,16 @@ ObjectData
 class
 Object
 {
+  uint32_t  id;
+
   ObjectKind  kind;
   ObjectData  data;
 
 public:
   Object();
-  Object(Dot&&                dt);
-  Object(DotSet&&           dtst);
-  Object(Line&&               ln);
-  Object(Plane&&              pl);
-  Object(Polygon&&            po);
-  Object(TexturedPolygon&&  txpo);
-  Object(Box&&               box);
-  Object(ObjectList&&      objls);
+  Object(Line&&                 ln);
+  Object(Polygon&&              po);
+  Object(ObjectArray&&       objar);
   Object(const Object&   rhs) noexcept;
   Object(      Object&&  rhs) noexcept;
  ~Object();
@@ -87,13 +66,24 @@ public:
 
   ObjectData*  operator->(){return &data;}
 
+  uint32_t  get_id() const{return id;}
+
+  void  change_id(uint32_t  id_){id = id_;}
+
   void  clear();
 
   void  transform(const Transformer&  tr);
 
   void  update();
 
-  void  render(Renderer&  dst) const;
+  void  produce_dotset(DotSet&  set) const;
+
+
+  static void  transform(ObjectArray&  arr, const Transformer&  tr);
+
+  static void  update(ObjectArray&  arr);
+
+  static void  produce_dotset(const ObjectArray&  arr, DotSet&  set);
 
 };
 

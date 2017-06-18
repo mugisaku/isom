@@ -117,22 +117,22 @@ preset_uv(const Rect&  rect, bool  clockwise)
 
     if(clockwise)
     {
-      polygons[0].a.PointUV::assign( left,   top);
-      polygons[0].b.PointUV::assign(right,   top);
-      polygons[0].c.PointUV::assign(right,bottom);
-      polygons[1].a.PointUV::assign( left,   top);
-      polygons[1].b.PointUV::assign(right,bottom);
-      polygons[1].c.PointUV::assign( left,bottom);
+      polygons[0].a.set_uv( left,   top);
+      polygons[0].b.set_uv(right,   top);
+      polygons[0].c.set_uv(right,bottom);
+      polygons[1].a.set_uv( left,   top);
+      polygons[1].b.set_uv(right,bottom);
+      polygons[1].c.set_uv( left,bottom);
     }
 
   else
     {
-      polygons[0].a.PointUV::assign( left,bottom);
-      polygons[0].b.PointUV::assign(right,bottom);
-      polygons[0].c.PointUV::assign(right,   top);
-      polygons[1].a.PointUV::assign( left,bottom);
-      polygons[1].b.PointUV::assign(right,   top);
-      polygons[1].c.PointUV::assign( left,   top);
+      polygons[0].a.set_uv( left,bottom);
+      polygons[0].b.set_uv(right,bottom);
+      polygons[0].c.set_uv(right,   top);
+      polygons[1].a.set_uv( left,bottom);
+      polygons[1].b.set_uv(right,   top);
+      polygons[1].c.set_uv( left,   top);
     }
 }
 
@@ -143,7 +143,7 @@ update()
 {
     for(auto&  poly: polygons)
     {
-      poly.image = image;
+      poly.texture_image = image;
 
       poly.update();
     }
@@ -163,18 +163,18 @@ transform(const Transformer&  tr)
 
 void
 Plane::
-render(Renderer&  dst) const
+produce_face_dotset(DotSet&  set) const
 {
     for(auto&  poly: polygons)
     {
-      poly.render(dst);
+      poly.produce_dotset(set);
     }
 }
 
 
 void
 Plane::
-render_wire(Renderer&  dst) const
+produce_wire_dotset(DotSet&  set) const
 {
   Line  lines[4];
 
@@ -189,7 +189,7 @@ render_wire(Renderer&  dst) const
 
     for(auto&  ln: lines)
     {
-      ln.render(dst);
+      ln.produce_dotset(set);
     }
 }
 

@@ -16,7 +16,7 @@ transform(const Transformer&  tr)
 
 void
 Line::
-render(Renderer&  dst) const
+produce_dotset(DotSet&  set) const
 {
   LineContext        lc(a,b);
   LineContext  color_lc(a.color.r,a.color.g,a.color.b,
@@ -26,9 +26,9 @@ render(Renderer&  dst) const
     {
       Color  color(color_lc.get_x(),
                    color_lc.get_y(),
-                   color_lc.get_z());
+                   color_lc.get_z(),255);
 
-      dst.put(color,lc.get_x(),lc.get_y(),lc.get_z());
+      set->emplace_back(Point(lc.get_x(),lc.get_y(),lc.get_z()),color);
 
         if(lc.is_finished())
         {

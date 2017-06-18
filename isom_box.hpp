@@ -25,8 +25,8 @@ Box
 
   void  update();
 
-  void  render(Renderer&  dst) const;
-  void  render_wire(Renderer&  dst) const;
+  void  render(Renderer&  dst, uint32_t  id=0) const;
+  void  render_wire(Renderer&  dst, uint32_t  id=0) const;
 
 };
 

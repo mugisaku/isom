@@ -171,8 +171,8 @@ put_color_safely(uint32_t  color, int  x, int  y)
 void
 put_renderer(const Renderer&  src, int  x, int  y, int  w, int  h)
 {
-    if(!w){w =  src.get_width();}
-    if(!h){h = src.get_height();}
+    if(!w){w = src.get_x_width();}
+    if(!h){h = src.get_y_width();}
 
 
     for(int  yy = 0;  yy < h;  ++yy){

@@ -1,5 +1,6 @@
 #include<SDL.h>
 #include"isom_DotSet.hpp"
+#include"isom_vertex.hpp"
 #include"isom_LineContext.hpp"
 #include"isom_screen.hpp"
 #include"isom_image.hpp"
@@ -20,7 +21,7 @@ bool  needed_to_redraw = true;
 
 
 Renderer
-renderer(screen::width,screen::height);
+renderer(0,0,screen::width,screen::height);
 
 
 constexpr int  sz = 128;
@@ -36,14 +37,17 @@ Plane  plane;
 Transformer  tr;
 
 
-DotSet
-dotset;
+VertexString
+buffer;
 
-DotSet
-nega_dotset;
 
-std::vector<TextureRenderingContext>
-ctx_stack;
+int
+index;
+
+
+DotSet       dotset;
+DotSet  nega_dotset;
+DotSet  wire_dotset;
 
 
 void
@@ -57,12 +61,16 @@ render()
 
       renderer.clear();
 
+      wire_dotset->clear();
 
       dotset.render(renderer);
 
-      renderer.draw_image(texture,nullptr,0,0,0);
+      renderer.draw_image(texture,nullptr,0,0);
 
-      nega_dotset.render(renderer);
+        for(auto&  dot: nega_dotset.dot_list)
+        {
+          renderer.put(black,dot.x,dot.y);
+        }
 
 
       auto  tmplane = plane;
@@ -71,7 +79,9 @@ render()
 
       tmplane.update();
 
-      tmplane.render_wire(renderer);
+      tmplane.produce_wire_dotset(wire_dotset);
+
+      wire_dotset.render(renderer);
 
       screen::put_renderer(renderer,0,0);
 
@@ -95,30 +105,20 @@ step()
     {
       last = now;
 
-        if(ctx_stack.size())
+        if(index)
         {
-          auto&  ctx = ctx_stack.back();
-
           int  n = 200;
 
             while(n--)
             {
-              auto&  p = ctx.get_plotter();
-              auto&  m = ctx.get_mapper();
+              auto&  v = buffer[--index];
 
-                   dotset->emplace_back(Point(p.get_x(), p.get_y(),p.get_z()),ctx.get_color());
-              nega_dotset->emplace_back(Point(m.get_x(),-m.get_y(),        1),        Color());
+                   dotset->emplace_back(Point(v.x,v.y,v.z),texture.get_color(v.u,v.v));
+              nega_dotset->emplace_back(Point(v.u,v.v,  0),            Color(       ));
 
-                if(ctx.is_finished())
+                if(!index)
                 {
-                  ctx_stack.pop_back();
-
                   break;
-                }
-
-              else
-                {
-                  ctx.step();
                 }
             }
 
@@ -159,18 +159,22 @@ process_keydown(int  key)
 
     if(flag)
     {
+      buffer.clear();
+
            dotset->clear();
       nega_dotset->clear();
-
 
       auto  tmplane = plane;
 
       tmplane.transform(tr);
 
-      ctx_stack.clear();
+      tmplane.update();
 
-      ctx_stack.emplace_back(tmplane.polygons[0].make_rendering_context());
-      ctx_stack.emplace_back(tmplane.polygons[1].make_rendering_context());
+      tmplane.polygons[0].produce_vertex_string(buffer);
+      tmplane.polygons[1].produce_vertex_string(buffer);
+
+
+      index = buffer.size();
     }
 }
 
@@ -233,10 +237,7 @@ main(int  argc, char**  argv)
   plane.update();
 
 
-  tr.set_translation_flag();
   tr.set_rotation_flag();
-
-  tr.change_offset(240,-240,0);
 
   render();
 

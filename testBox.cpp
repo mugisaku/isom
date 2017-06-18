@@ -6,6 +6,7 @@
 #include"isom_point.hpp"
 #include"isom_plane.hpp"
 #include"isom_object.hpp"
+#include"isom_box.hpp"
 #include"isom_renderer.hpp"
 
 
@@ -24,7 +25,7 @@ constexpr int  sz = 64;
 
 
 Renderer
-renderer(screen::width,screen::height);
+renderer(0,0,screen::width,screen::height);
 
 
 Image  texture;
@@ -54,7 +55,7 @@ render()
 
       o.update();
 
-      o.render(renderer);
+//      o.render(renderer);
 
 
       screen::put_renderer(renderer,0,0);
@@ -140,7 +141,7 @@ main(int  argc, char**  argv)
 
   light.normalize();
 
-  obj = Object(ObjectList());
+  obj = Object(ObjectArray());
 
   Box  a_box;
   Box  b_box;
@@ -163,41 +164,21 @@ main(int  argc, char**  argv)
   b_box.get_bottom().image = &texture;
   b_box.get_bottom().preset_uv(Rect(0,0,sz,sz),true);
 
-  obj->object_list.emplace_back(std::move(a_box));
-  obj->object_list.emplace_back(std::move(b_box));
+//  obj->object_array.emplace_back(std::move(a_box));
+//  obj->object_array.emplace_back(std::move(b_box));
 
-  Polygon  poly(Dot(Point(100, 0, 0),red),
-                Dot(Point(180,80, 0),green),
-                Dot(Point(100, 0,40),blue));
+  Polygon  poly(Vertex(100, 0, 0),
+                Vertex(180,80, 0),
+                Vertex(100, 0,40));
 
-  obj->object_list.emplace_back(std::move(poly));
+  obj->object_array.emplace_back(std::move(poly));
   
 
-  tr.change_offset(sz*2,-sz*2,0);
   tr.change_center(0,0,0);
 
-  tr.set_translation_flag();
   tr.set_rotation_flag();
 
   render();
-
-
-if(0)
-{
-    for(int  i = 0;  i <= 360;  i += 5)
-    {
-      printf("%10f,//%3d\n",std::sin(to_radian(i)),i);
-    }
-
-
-  printf("-----\n");
-
-    for(int  i = 0;  i <= 360;  i += 5)
-    {
-      printf("%10f,//%3d\n",std::cos(to_radian(i)),i);
-    }
-  fflush(stdout);
-}
 
 
 #ifdef EMSCRIPTEN

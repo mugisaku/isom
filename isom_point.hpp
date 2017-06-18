@@ -30,6 +30,15 @@ Point
   Point&  operator-=(const Point&  rhs);
   Point&  operator*=(double  rate);
 
+  bool  operator<(const Point&  rhs) const
+  {
+      if(z < rhs.z){return true;}
+      if(y < rhs.y){return true;}
+      if(x < rhs.x){return true;}
+
+    return false;
+  }
+
   void  assign(value_type  x_, value_type  y_, value_type  z_);
 
   void  print(const char*  s="") const;

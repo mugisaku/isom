@@ -22,17 +22,31 @@ namespace{
 bool  needed_to_redraw = true;
 
 
-constexpr int  sz = 64;
-
-
 Renderer
-renderer(screen::width,screen::height);
+renderer(0,0,screen::width,screen::height);
 
 
-Object  obj;
+ObjectArray  standard;
+ObjectArray    marker;
 
 
-Transformer       tr;
+struct
+Panel
+{
+  VertexString*  string;
+
+  Point  point;
+
+};
+
+
+
+Object*  objptr;
+
+
+Image  icon;
+
+
 Transformer  view_tr;
 
 
@@ -42,28 +56,8 @@ Mouse  mouse;
 View  view;
 
 
-ViewController
-bottom_view_ctrl("bottom",80,96,
-              view.src_point.x,
-              view.src_point.z,
-              view.dst_point.x,
-              view.dst_point.z);
-
-ViewController
-front_view_ctrl("front",80,0,
-                view.src_point.x,
-                view.src_point.y,
-                view.dst_point.x,
-                view.dst_point.y);
-
-ViewController
-left_view_ctrl("left",0,0,
-                view.src_point.z,
-                view.src_point.y,
-                view.dst_point.z,
-                view.dst_point.y);
-
-
+Object*  x_line;
+Object*  y_line;
 
 
 void
@@ -71,6 +65,10 @@ render()
 {
     if(needed_to_redraw)
     {
+      static ObjectArray  arr;
+
+      static DotSet  dotset;
+
       screen::lock();
 
       screen::clear();
@@ -78,18 +76,21 @@ render()
       renderer.clear();
 
 
-      Object  o = obj;
+      arr.clear();
 
-      o.transform(view_tr);
+      dotset->clear();
 
-      o.update();
+      arr.emplace_back(ObjectArray(standard));
 
-      o.render(renderer);
+      Object::transform(arr,view_tr);
 
+      Object::update(arr);
 
-       front_view_ctrl.render(renderer);
-        left_view_ctrl.render(renderer);
-      bottom_view_ctrl.render(renderer);
+      Object::produce_dotset(arr,dotset);
+
+      dotset.render(renderer);
+
+      renderer.draw_image(icon,nullptr,0,0);
 
       screen::put_renderer(renderer,0,0);
 
@@ -153,56 +154,34 @@ main_loop()
         mouse.modified = 1;
         break;
       case(SDL_KEYDOWN):
-          needed_to_redraw = true;
-
-          constexpr int  step = 15;
-
-          bool  flag = false;
-
-          bool  shifting = (SDL_GetModState()&KMOD_SHIFT);
-
-          auto&  o = view.src_point;
-
-            switch(evt.key.keysym.sym)
-            {
-          case(SDLK_LEFT ):                                {o.x -= step;}break;
-          case(SDLK_RIGHT):                                {o.x += step;}break;
-          case(SDLK_UP   ): if(shifting){o.z -= step;} else{o.y += step;}break;
-          case(SDLK_DOWN ): if(shifting){o.z += step;} else{o.y -= step;}break;
-          case(SDLK_SPACE):
-              break;
-          case(SDLK_1): screen::save_as_bmp();break;
-            }
-
-
-          view_tr = view.make_transformer();
+          break;
         }
+
+
     }
 
 
     if(mouse.modified)
     {
-        if(front_view_ctrl.test(mouse))
+      static int  x_prev;
+      static int  y_prev;
+
+        if(mouse.left)
         {
-          front_view_ctrl.process(mouse);
-
           needed_to_redraw = true;
-        }
 
-      else
-        if(left_view_ctrl.test(mouse))
-        {
-          left_view_ctrl.process(mouse);
+          auto  x = renderer.get_x_base();
+          auto  y = renderer.get_y_base();
 
-          needed_to_redraw = true;
-        }
+               if(mouse.x < (x_prev-4)){x += 8;}
+          else if(mouse.x > (x_prev+4)){x -= 8;}
+               if(mouse.y < (y_prev-4)){y -= 8;}
+          else if(mouse.y > (y_prev+4)){y += 8;}
 
-      else
-        if(bottom_view_ctrl.test(mouse))
-        {
-          bottom_view_ctrl.process(mouse);
+          renderer.change_base_point(x,y);
 
-          needed_to_redraw = true;
+          x_prev = mouse.x;
+          y_prev = mouse.y;
         }
 
 
@@ -224,25 +203,33 @@ main(int  argc, char**  argv)
 {
   screen::open();
 
+  icon.open("icon.png");
+
   light.normalize();
 
-  obj = Object(ObjectList());
+  view.src_point.y =  80;
+  view.src_point.z = 200;
 
-  Box  box;
+  view_tr.change_angle(315,-35,-30);
+  view_tr.set_translation_flag();
+  view_tr.set_rotation_flag();
 
-  box.build(Point(0,0,0),80,80,40);
 
+  standard.emplace_back(Line(Dot(Point(-400,   0,   0),black),
+                             Dot(Point(   0,   0,   0),red)));
+  standard.emplace_back(Line(Dot(Point(   0,   0,   0),red),
+                             Dot(Point( 400,   0,   0),white)));
 
-  const Image*  ptr = nullptr;
+  standard.emplace_back(Line(Dot(Point(   0,-400,   0),black),
+                             Dot(Point(   0,   0,   0),green)));
+  standard.emplace_back(Line(Dot(Point(   0,   0,   0),green),
+                             Dot(Point(   0, 400,   0),white)));
 
-  obj->object_list.emplace_back(std::move(box));
-  
+  standard.emplace_back(Line(Dot(Point(   0,   0,-400),black),
+                             Dot(Point(   0,   0,   0),blue)));
+  standard.emplace_back(Line(Dot(Point(   0,   0,   0),blue),
+                             Dot(Point(   0,   0, 400),white)));
 
-  tr.change_offset(sz*2,-sz*2,0);
-  tr.change_center(0,0,0);
-
-  tr.set_translation_flag();
-  tr.set_rotation_flag();
 
   render();
 

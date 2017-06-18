@@ -5,15 +5,15 @@
 
 void
 DotSet::
-transform(const Transformer&  tr)
+relativize(const Point&  base)
 {
+//  std::stable_sort(dot_list.begin(),dot_list.end());
+
     for(auto&  dot: dot_list)
     {
-      dot.transform(tr);
+      static_cast<Point&>(dot) -= base;
     }
 }
-
-
 
 
 void
@@ -22,10 +22,9 @@ render(Renderer&  dst) const
 {
     for(auto&  dot: dot_list)
     {
-      dot.render(dst);
+      dot.render(dst,0);
     }
 }
-
 
 
 

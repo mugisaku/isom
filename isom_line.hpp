@@ -3,6 +3,7 @@
 
 
 #include"isom_dot.hpp"
+#include"isom_DotSet.hpp"
 
 
 
@@ -16,9 +17,10 @@ Line
           b(Point(),Color(0xFF,0xFF,0xFF,0xFF)){}
   Line(const Dot&  a_, const Dot&  b_): a(a_), b(b_){}
 
+
   void  transform(const Transformer&  tr);
 
-  void  render(Renderer&  dst) const;
+  void  produce_dotset(DotSet&  set) const;
 
 };
 

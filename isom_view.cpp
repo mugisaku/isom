@@ -3,23 +3,26 @@
 
 
 
+void
+View::
+update()
+{
+  angle.x = to_degree(std::atan2(src_point.y-dst_point.y,src_point.z-dst_point.z));
+  angle.y = to_degree(std::atan2(src_point.x-dst_point.x,src_point.z-dst_point.z));
+  angle.z = to_degree(std::atan2(src_point.y-dst_point.y,src_point.x-dst_point.x));
+}
+
+
 Transformer
 View::
 make_transformer() const
 {
   Transformer  tr;
 
-  Point  tmpt;
-
-//    tr.change_offset(dst_point);
   tr.change_angle(angle);
-  tr.change_center(dst_point);
+  tr.change_center(src_point);
 
   tr.set_rotation_flag();
-
-  tr(tmpt);
-
-  tr.change_center(tmpt);
 
   return tr;
 }

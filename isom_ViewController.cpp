@@ -4,10 +4,11 @@
 
 
 ViewController::
-ViewController(const char*  title_, int  x, int  y, int&  src_x_target_,
-                                                    int&  src_y_target_,
-                                                    int&  dst_x_target_,
-                                                    int&  dst_y_target_):
+ViewController(const char*  title_, int  x, int  y,
+               int&  src_x_target_,
+               int&  src_y_target_,
+               int&  dst_x_target_,
+               int&  dst_y_target_, bool  y_rev):
 title(title_),
 field_rect(x,y+16,frame_size,frame_size),
 src_x_target(src_x_target_),
@@ -15,9 +16,9 @@ src_y_target(src_y_target_),
 dst_x_target(dst_x_target_),
 dst_y_target(dst_y_target_),
 x_target(nullptr),
-y_target(nullptr)
+y_target(nullptr),
+y_reversing(y_rev)
 {
-  
 }
 
 
@@ -35,17 +36,17 @@ void
 ViewController::
 process(const Mouse&  mouse)
 {
-  int  x0 = field_rect.x+( src_x_target+space_halfsize)/(space_size/frame_size);
-  int  y0 = field_rect.y+(-src_y_target+space_halfsize)/(space_size/frame_size);
-  int  x1 = field_rect.x+( dst_x_target+space_halfsize)/(space_size/frame_size);
-  int  y1 = field_rect.y+(-dst_y_target+space_halfsize)/(space_size/frame_size);
-
     if(x_target)
     {
         if(mouse.left)
         {
-          *x_target =  (mouse.x-field_rect.x-frame_halfsize)*(space_size/frame_size);
-          *y_target = -(mouse.y-field_rect.y-frame_halfsize)*(space_size/frame_size);
+          *x_target = (mouse.x-field_rect.x-frame_halfsize)*(space_size/frame_size);
+          *y_target = (mouse.y-field_rect.y-frame_halfsize)*(space_size/frame_size);
+
+            if(y_reversing)
+            {
+              *y_target *= -1;
+            }
         }
 
       else
@@ -58,6 +59,13 @@ process(const Mouse&  mouse)
   else
     if(mouse.left)
     {
+      int  x0 = field_rect.x+(src_x_target+space_halfsize)/(space_size/frame_size);
+      int  x1 = field_rect.x+(dst_x_target+space_halfsize)/(space_size/frame_size);
+
+      int  y0 = field_rect.y+((src_y_target*(y_reversing? -1:1))+space_halfsize)/(space_size/frame_size);
+      int  y1 = field_rect.y+((dst_y_target*(y_reversing? -1:1))+space_halfsize)/(space_size/frame_size);
+
+
         if(make_rect(x0,y0).test(mouse.x,mouse.y))
         {
           x_target = &src_x_target;
@@ -102,10 +110,11 @@ render(Renderer&  dst) const
                      field_rect.x+frame_size    ,
                      field_rect.y+frame_halfsize,2);
 
-  int  x0 = field_rect.x+( src_x_target+space_halfsize)/(space_size/frame_size);
-  int  y0 = field_rect.y+(-src_y_target+space_halfsize)/(space_size/frame_size);
-  int  x1 = field_rect.x+( dst_x_target+space_halfsize)/(space_size/frame_size);
-  int  y1 = field_rect.y+(-dst_y_target+space_halfsize)/(space_size/frame_size);
+  int  x0 = field_rect.x+(src_x_target+space_halfsize)/(space_size/frame_size);
+  int  x1 = field_rect.x+(dst_x_target+space_halfsize)/(space_size/frame_size);
+
+  int  y0 = field_rect.y+((src_y_target*(y_reversing? -1:1))+space_halfsize)/(space_size/frame_size);
+  int  y1 = field_rect.y+((dst_y_target*(y_reversing? -1:1))+space_halfsize)/(space_size/frame_size);
 
   dst.draw_line(red,x0,
                     y0,
@@ -114,6 +123,16 @@ render(Renderer&  dst) const
 
   dst.fill_rect(make_rect(x0,y0),   red);
   dst.fill_rect(make_rect(x1,y1),yellow);
+
+  dst.draw_line(yellow,x1-square_size,
+                       y1,
+                       x1+square_size,
+                       y1);
+  dst.draw_line(yellow,x1,
+                       y1-square_size,
+                       x1,
+                       y1+square_size);
+
 }
 
 
