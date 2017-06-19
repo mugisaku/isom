@@ -20,6 +20,8 @@ DotSet
 
   void  relativize(const Point&  base);
 
+  void  transform(const Transformer&  tr);
+
   void  render(Renderer&  dst) const;
 
 };

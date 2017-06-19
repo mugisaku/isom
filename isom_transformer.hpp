@@ -4,6 +4,7 @@
 
 #include"isom_math.hpp"
 #include"isom_point.hpp"
+#include"isom_vector.hpp"
 
 
 
@@ -65,7 +66,8 @@ public:
   bool  test_scaling_flag()     const{return flags&    scaling_flag;}
   bool  test_rotation_flag()    const{return flags&   rotation_flag;}
 
-  Point  operator()(const Point&  target) const;
+  Point   operator()(const Point&   target) const;
+  Vector  operator()(const Vector&  target) const;
 
 };
 

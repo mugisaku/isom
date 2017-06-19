@@ -139,7 +139,7 @@ main(int  argc, char**  argv)
   texture.set_colorkey(0,0,0);
 
 
-  light.normalize();
+  directional_light::vector.normalize();
 
   obj = Object(ObjectArray());
 

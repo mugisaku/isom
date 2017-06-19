@@ -1,4 +1,5 @@
 #include"isom_polygon.hpp"
+#include"isom_line.hpp"
 
 
 
@@ -142,6 +143,10 @@ produce_dotset(DotSet&  dotset) const
 {
     if(normal_vector.z < 0)
     {
+      Line(Dot(a,white),Dot(b,white)).produce_dotset(dotset);
+      Line(Dot(b,white),Dot(c,white)).produce_dotset(dotset);
+      Line(Dot(c,white),Dot(a,white)).produce_dotset(dotset);
+
       return;
     }
 
@@ -150,11 +155,22 @@ produce_dotset(DotSet&  dotset) const
 
   prerender(*this);
 
-  auto  r = Vector::dot_product(light,normal_vector);
+  auto  p = -Vector::dot_product(directional_light::transformed_vector,normal_vector);
+
+  p = (1+p)/2;
+
+    if(std::isnan(p))
+    {
+      p = 0;
+    }
+
+
+  auto&  dlcolor = directional_light::color;
+  auto&  abcolor =     ambient_light::color;
 
     if(texture_image)
     {
-      int  l = 128+(127*r);
+      int  l = 128+(127*p);
 
         for(auto&  v: buffer)
         {
@@ -166,9 +182,16 @@ produce_dotset(DotSet&  dotset) const
 
   else
     {
-      int  l = 128+(127*r);
+      int  r = abcolor.r+(dlcolor.r*p);
+      int  g = abcolor.g+(dlcolor.g*p);
+      int  b = abcolor.b+(dlcolor.b*p);
 
-      Color  color(l,l,l,255);
+        if(r > 255){r = 255;}
+        if(g > 255){g = 255;}
+        if(b > 255){b = 255;}
+
+
+      Color  color(r,g,b,255);
 
         for(auto&  v: buffer)
         {

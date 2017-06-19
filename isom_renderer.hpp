@@ -10,6 +10,7 @@
 #include"isom_image.hpp"
 #include"isom_LineContext.hpp"
 #include"isom_font.hpp"
+#include"isom_light.hpp"
 
 
 
@@ -24,10 +25,6 @@ Cell: public Color
   uint32_t  id;
 
 };
-
-
-extern Vector          light;
-extern Color   ambient_color;
 
 
 class

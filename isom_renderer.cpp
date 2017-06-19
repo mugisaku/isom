@@ -3,16 +3,6 @@
 
 
 
-Vector
-light(0,0,1);
-
-
-Color
-ambient_color(127,127,127,255);
-
-
-
-
 Renderer::
 Renderer(int  x, int  y, int  w, int  h):
 x_width(w),

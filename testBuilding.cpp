@@ -22,12 +22,29 @@ namespace{
 bool  needed_to_redraw = true;
 
 
-Renderer
-renderer(0,0,screen::width,screen::height);
+constexpr int  sz = 48;
 
 
-ObjectArray  standard;
-ObjectArray    marker;
+Renderer  main_renderer(0,0,screen::width,screen::height);
+Renderer   sub_renderer(0,0,sz*2,sz*2);
+
+
+DotSet       standard;
+DotSet  mini_standard;
+
+Polygon  sample_polygon(Vertex( 0, 0,0),
+                        Vertex(sz, 0,0),
+                        Vertex( 0,sz,0));
+
+DotSet  marker;
+
+
+struct
+PanelSource
+{
+  Polygon  polygon;
+
+};
 
 
 struct
@@ -47,7 +64,8 @@ Object*  objptr;
 Image  icon;
 
 
-Transformer  view_tr;
+Transformer    view_tr;
+Transformer  sample_tr;
 
 
 Mouse  mouse;
@@ -61,38 +79,70 @@ Object*  y_line;
 
 
 void
+render_main()
+{
+  static ObjectArray  arr;
+  static DotSet  dotset;
+
+  dotset->clear();
+
+  main_renderer.clear();
+
+
+  standard.render(main_renderer);
+
+
+  arr.clear();
+
+  Object::update(arr);
+
+  Object::produce_dotset(arr,dotset);
+
+  dotset.render(main_renderer);
+}
+
+
+void
+render_sub()
+{
+  static DotSet  dotset;
+
+  dotset->clear();
+
+  sub_renderer.clear();
+
+
+  auto  p = sample_polygon;
+
+  p.transform(sample_tr);
+  p.transform(  view_tr);
+
+  p.update();
+
+  p.produce_dotset(dotset);
+
+  mini_standard.render(sub_renderer);
+  dotset.render(       sub_renderer);
+}
+
+
+void
 render()
 {
     if(needed_to_redraw)
     {
-      static ObjectArray  arr;
-
-      static DotSet  dotset;
-
       screen::lock();
 
       screen::clear();
 
-      renderer.clear();
+      directional_light::transformed_vector = view_tr(directional_light::vector);
+
+      render_main();
+      render_sub();
 
 
-      arr.clear();
-
-      dotset->clear();
-
-      arr.emplace_back(ObjectArray(standard));
-
-      Object::transform(arr,view_tr);
-
-      Object::update(arr);
-
-      Object::produce_dotset(arr,dotset);
-
-      dotset.render(renderer);
-
-      renderer.draw_image(icon,nullptr,0,0);
-
-      screen::put_renderer(renderer,0,0);
+      screen::put_renderer(main_renderer,0,0);
+      screen::put_renderer( sub_renderer,0,0);
 
       screen::unlock();
       screen::update();
@@ -100,6 +150,30 @@ render()
 
       needed_to_redraw = false;
     }
+}
+
+
+void
+process_key(SDL_Keycode  k)
+{
+  bool  shifting = SDL_GetModState()&KMOD_SHIFT;
+
+  auto  a = sample_tr.get_angle();
+
+  constexpr int  step = 5;
+
+    switch(k)
+    {
+  case(SDLK_UP   ): if(shifting){a.z -= step;} else{a.y += step;}break;
+  case(SDLK_DOWN ): if(shifting){a.z += step;} else{a.y -= step;}break;
+  case(SDLK_LEFT ): a.x -= step;break;
+  case(SDLK_RIGHT): a.x += step;break;
+    }
+
+
+  sample_tr.change_angle(a);
+
+  needed_to_redraw = true;
 }
 
 
@@ -154,6 +228,7 @@ main_loop()
         mouse.modified = 1;
         break;
       case(SDL_KEYDOWN):
+          process_key(evt.key.keysym.sym);
           break;
         }
 
@@ -170,15 +245,15 @@ main_loop()
         {
           needed_to_redraw = true;
 
-          auto  x = renderer.get_x_base();
-          auto  y = renderer.get_y_base();
+          auto  x = main_renderer.get_x_base();
+          auto  y = main_renderer.get_y_base();
 
                if(mouse.x < (x_prev-4)){x += 8;}
           else if(mouse.x > (x_prev+4)){x -= 8;}
                if(mouse.y < (y_prev-4)){y -= 8;}
           else if(mouse.y > (y_prev+4)){y += 8;}
 
-          renderer.change_base_point(x,y);
+          main_renderer.change_base_point(x,y);
 
           x_prev = mouse.x;
           y_prev = mouse.y;
@@ -190,6 +265,56 @@ main_loop()
 
 
   render();
+}
+
+
+void
+make_standard()
+{
+  ObjectArray  arr;
+
+  arr.emplace_back(Line(Dot(Point(-400,   0,   0),black),
+                        Dot(Point(   0,   0,   0),red)));
+  arr.emplace_back(Line(Dot(Point(   0,   0,   0),red),
+                        Dot(Point( 400,   0,   0),white)));
+
+  arr.emplace_back(Line(Dot(Point(   0,-400,   0),black),
+                        Dot(Point(   0,   0,   0),green)));
+  arr.emplace_back(Line(Dot(Point(   0,   0,   0),green),
+                        Dot(Point(   0, 400,   0),white)));
+
+  arr.emplace_back(Line(Dot(Point(   0,   0,-400),black),
+                        Dot(Point(   0,   0,   0),blue)));
+  arr.emplace_back(Line(Dot(Point(   0,   0,   0),blue),
+                        Dot(Point(   0,   0, 400),white)));
+
+  Object::transform(arr,view_tr);
+  Object::update(arr);
+
+  Object::produce_dotset(arr,standard);
+
+
+  arr.clear();
+
+  arr.emplace_back(Line(Dot(Point(-64,   0,   0),black),
+                        Dot(Point(  0,   0,   0),red)));
+  arr.emplace_back(Line(Dot(Point(  0,   0,   0),red),
+                        Dot(Point( 64,   0,   0),white)));
+
+  arr.emplace_back(Line(Dot(Point(   0,-64,   0),black),
+                        Dot(Point(   0,  0,   0),green)));
+  arr.emplace_back(Line(Dot(Point(   0,  0,   0),green),
+                        Dot(Point(   0, 64,   0),white)));
+
+  arr.emplace_back(Line(Dot(Point(   0,   0,-64),black),
+                        Dot(Point(   0,   0,  0),blue)));
+  arr.emplace_back(Line(Dot(Point(   0,   0,  0),blue),
+                        Dot(Point(   0,   0, 64),white)));
+
+  Object::transform(arr,view_tr);
+  Object::update(arr);
+
+  Object::produce_dotset(arr,mini_standard);
 }
 
 
@@ -205,30 +330,16 @@ main(int  argc, char**  argv)
 
   icon.open("icon.png");
 
-  light.normalize();
-
   view.src_point.y =  80;
   view.src_point.z = 200;
 
   view_tr.change_angle(315,-35,-30);
   view_tr.set_translation_flag();
   view_tr.set_rotation_flag();
+  sample_tr.set_rotation_flag();
 
 
-  standard.emplace_back(Line(Dot(Point(-400,   0,   0),black),
-                             Dot(Point(   0,   0,   0),red)));
-  standard.emplace_back(Line(Dot(Point(   0,   0,   0),red),
-                             Dot(Point( 400,   0,   0),white)));
-
-  standard.emplace_back(Line(Dot(Point(   0,-400,   0),black),
-                             Dot(Point(   0,   0,   0),green)));
-  standard.emplace_back(Line(Dot(Point(   0,   0,   0),green),
-                             Dot(Point(   0, 400,   0),white)));
-
-  standard.emplace_back(Line(Dot(Point(   0,   0,-400),black),
-                             Dot(Point(   0,   0,   0),blue)));
-  standard.emplace_back(Line(Dot(Point(   0,   0,   0),blue),
-                             Dot(Point(   0,   0, 400),white)));
+  make_standard();
 
 
   render();

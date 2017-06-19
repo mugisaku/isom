@@ -130,5 +130,31 @@ operator()(const Point&  target) const
 }
 
 
+Vector
+Transformer::
+operator()(const Vector&  target) const
+{
+  double  x0 = target.x;
+  double  y0 = target.y;
+  double  z0 = target.z;
+
+
+  double  x1 = (                            x0);
+  double  y1 = ( x_cos_value*y0+x_sin_value*z0);
+  double  z1 = (-x_sin_value*y0+x_cos_value*z0);
+
+
+  double  x2 = (y_cos_value*x1+-y_sin_value*z1);
+  double  y2 = (                            y1);
+  double  z2 = (y_sin_value*x1+ y_cos_value*z1);
+
+
+  return Vector(( z_cos_value*x2+z_sin_value*y2),
+                (-z_sin_value*x2+z_cos_value*y2),
+                (                            z2));
+}
+
+
+
 
 
