@@ -29,11 +29,11 @@ transform(const Transformer&  tr)
 
 void
 DotSet::
-render(Renderer&  dst) const
+render(Renderer&  dst, uint32_t  id) const
 {
     for(auto&  dot: dot_list)
     {
-      dot.render(dst,0);
+      dot.render(dst,id);
     }
 }
 

@@ -3,10 +3,18 @@
 
 
 
+LightSet
 Renderer::
-Renderer(int  x, int  y, int  w, int  h):
+default_lightset;
+
+
+
+
+Renderer::
+Renderer(int  x, int  y, int  w, int  h, const LightSet*  ls):
 x_width(w),
-y_width(h)
+y_width(h),
+lightset(ls)
 {
   table.resize(x_width*y_width);
 

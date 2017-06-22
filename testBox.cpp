@@ -4,9 +4,7 @@
 #include"isom_screen.hpp"
 #include"isom_image.hpp"
 #include"isom_point.hpp"
-#include"isom_plane.hpp"
 #include"isom_object.hpp"
-#include"isom_box.hpp"
 #include"isom_renderer.hpp"
 
 
@@ -139,37 +137,11 @@ main(int  argc, char**  argv)
   texture.set_colorkey(0,0,0);
 
 
-  directional_light::vector.normalize();
-
   obj = Object(ObjectArray());
 
-  Box  a_box;
-  Box  b_box;
-
-  a_box.build(Point(  0,0,0),80,80,40);
-  b_box.build(Point(100,0,0),80,80,40);
-
-  b_box.get_top().image = &texture;
-  b_box.get_top().preset_uv(Rect(0,0,sz,sz),false);
-
-  b_box.get_front().image = &texture;
-  b_box.get_front().preset_uv(Rect(0,0,sz,sz),false);
-
-  b_box.get_left().image = &texture;
-  b_box.get_left().preset_uv(Rect(0,0,sz,sz),true);
-
-  b_box.get_right().image = &texture;
-  b_box.get_right().preset_uv(Rect(0,0,sz,sz),false);
-
-  b_box.get_bottom().image = &texture;
-  b_box.get_bottom().preset_uv(Rect(0,0,sz,sz),true);
-
-//  obj->object_array.emplace_back(std::move(a_box));
-//  obj->object_array.emplace_back(std::move(b_box));
-
-  Polygon  poly(Vertex(100, 0, 0),
-                Vertex(180,80, 0),
-                Vertex(100, 0,40));
+  Polygon  poly(0,Vertex(100, 0, 0),
+                  Vertex(180,80, 0),
+                  Vertex(100, 0,40));
 
   obj->object_array.emplace_back(std::move(poly));
   

@@ -166,7 +166,7 @@ produce_dotset(DotSet&  set) const
       data.line.produce_dotset(set);
       break;
   case(ObjectKind::polygon):
-      data.polygon.produce_dotset(set);
+      data.polygon.produce_dotset(nullptr,set);
       break;
   case(ObjectKind::object_array):
       produce_dotset(data.object_array,set);

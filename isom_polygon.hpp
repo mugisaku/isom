@@ -6,6 +6,7 @@
 #include"isom_DotSet.hpp"
 #include"isom_vector.hpp"
 #include"isom_vertex.hpp"
+#include"isom_LightSet.hpp"
 
 
 
@@ -13,18 +14,18 @@
 struct
 Polygon
 {
+  uint32_t  id;
+
   Vertex  a;
   Vertex  b;
   Vertex  c;
 
   Vector  normal_vector;
 
-  const Image*  texture_image;
-
-  constexpr Polygon(const Vertex&  a_=Vertex(),
-                    const Vertex&  b_=Vertex(),
-                    const Vertex&  c_=Vertex(), const Image*  teximg=nullptr):
-  a(a_), b(b_), c(c_), texture_image(teximg){}
+  constexpr Polygon(uint32_t  id_=0, const Vertex&  a_=Vertex(),
+                                     const Vertex&  b_=Vertex(),
+                                     const Vertex&  c_=Vertex()):
+  id(id_), a(a_), b(b_), c(c_){}
 
 
   void  update();
@@ -33,7 +34,10 @@ Polygon
 
   void  produce_vertex_string(VertexString&  s) const;
 
-  void  produce_dotset(DotSet&  dotset) const;
+  void  produce_dotset(                           const Image*  texture_image, DotSet&  dotset) const;
+  void  produce_dotset(const LightSet&  lightset, const Image*  texture_image, DotSet&  dotset) const;
+
+  void  produce_wire_dotset(DotSet&  dotset) const;
 
 };
 

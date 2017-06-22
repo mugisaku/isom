@@ -36,7 +36,7 @@ void  clear();
 
 void   put_color(       uint32_t  color, int  x, int  y);
 void   put_color_safely(uint32_t  color, int  x, int  y);
-void   put_renderer(const Renderer&  src, int  x, int  y, int  w=0, int  h=0);
+void   put_renderer(const Renderer&  src, int  x, int  y);
 void   put_image(const Image&  src, const Rect*  src_rect, int  dst_x, int  dst_y);
 
 void  update();

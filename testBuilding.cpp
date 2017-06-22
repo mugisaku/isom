@@ -1,14 +1,15 @@
 #include<SDL.h>
+#include<list>
 #include"isom_DotSet.hpp"
 #include"isom_LineContext.hpp"
 #include"isom_screen.hpp"
 #include"isom_image.hpp"
 #include"isom_point.hpp"
-#include"isom_plane.hpp"
 #include"isom_object.hpp"
 #include"isom_renderer.hpp"
-#include"isom_view.hpp"
-#include"isom_ViewController.hpp"
+#include"isom_mouse.hpp"
+#include"libjson/json.hpp"
+#include"libjson/json_stream.hpp"
 
 
 #ifdef EMSCRIPTEN
@@ -24,37 +25,49 @@ bool  needed_to_redraw = true;
 
 constexpr int  sz = 48;
 
+constexpr int  model_renderer_x_pos = sz*2;
 
-Renderer  main_renderer(0,0,screen::width,screen::height);
-Renderer   sub_renderer(0,0,sz*2,sz*2);
+
+Renderer  main_renderer(   0,0,screen::width,screen::height);
+Renderer    model_renderer(0,0,sz*2,sz*2);
+Renderer   sample_renderer(0,0,sz*2,sz*2);
+
+
+Point  cursor_point;
 
 
 DotSet       standard;
 DotSet  mini_standard;
 
-Polygon  sample_polygon(Vertex( 0, 0,0),
-                        Vertex(sz, 0,0),
-                        Vertex( 0,sz,0));
+Polygon  sample_polygon(0,Vertex(Point( 0, 0,0),white),
+                          Vertex(Point(sz, 0,0),white),
+                          Vertex(Point( 0,sz,0),white));
+
+constexpr Color  model_color(0x7F,0x7F,0x7F,0xFF);
+
+
+Polygon
+model_polygons[4] =
+{
+  Polygon(1,Vertex(Point(  0,  0,0),model_color),
+            Vertex(Point( sz,  0,0),model_color),
+            Vertex(Point(  0, sz,0),model_color)),
+  Polygon(2,Vertex(Point(  0,  0,0),model_color),
+            Vertex(Point(  0, sz,0),model_color),
+            Vertex(Point(-sz,  0,0),model_color)),
+  Polygon(3,Vertex(Point(  0,  0,0),model_color),
+            Vertex(Point(-sz,  0,0),model_color),
+            Vertex(Point(  0,-sz,0),model_color)),
+  Polygon(4,Vertex(Point(  0,  0,0),model_color),
+            Vertex(Point(  0,-sz,0),model_color),
+            Vertex(Point( sz,  0,0),model_color)),
+};
+
 
 DotSet  marker;
 
 
-struct
-PanelSource
-{
-  Polygon  polygon;
-
-};
-
-
-struct
-Panel
-{
-  VertexString*  string;
-
-  Point  point;
-
-};
+Image  texture;
 
 
 
@@ -64,14 +77,12 @@ Object*  objptr;
 Image  icon;
 
 
+Transformer   model_tr;
 Transformer    view_tr;
 Transformer  sample_tr;
 
 
 Mouse  mouse;
-
-
-View  view;
 
 
 Object*  x_line;
@@ -99,30 +110,76 @@ render_main()
   Object::produce_dotset(arr,dotset);
 
   dotset.render(main_renderer);
+
+
+  Formatted  fmt;
+
+  main_renderer.draw_ascii(fmt("X: %4d",cursor_point.x),white,0,screen::height-24);
+  main_renderer.draw_ascii(fmt("Y: %4d",cursor_point.x),white,0,screen::height-16);
+  main_renderer.draw_ascii(fmt("Z: %4d",cursor_point.x),white,0,screen::height- 8);
 }
 
 
 void
-render_sub()
+render_sample()
 {
   static DotSet  dotset;
 
+  sample_renderer.clear();
+
+
+  mini_standard.render(sample_renderer);
+
   dotset->clear();
 
-  sub_renderer.clear();
+  auto  po = sample_polygon;
+
+  po.transform(sample_tr);
+  po.transform(  view_tr);
+  po.update();
+
+  po.produce_dotset(nullptr,dotset);
+
+  dotset.render(sample_renderer,po.id);
 
 
-  auto  p = sample_polygon;
+  const auto  rect = Rect(0,0,sample_renderer.get_x_width(),
+                              sample_renderer.get_y_width());
 
-  p.transform(sample_tr);
-  p.transform(  view_tr);
+  sample_renderer.draw_rect(rect,white);
+}
 
-  p.update();
 
-  p.produce_dotset(dotset);
+void
+render_model()
+{
+  static DotSet  dotset;
 
-  mini_standard.render(sub_renderer);
-  dotset.render(       sub_renderer);
+  model_renderer.clear();
+
+
+  mini_standard.render(model_renderer);
+
+    for(auto  bo: model_polygons)
+    {
+      dotset->clear();
+
+      bo.transform(model_tr);
+      bo.transform( view_tr);
+      bo.update();
+
+      bo.produce_dotset(nullptr,dotset);
+
+      dotset.render(model_renderer,bo.id);
+
+      bo.produce_wire_dotset(dotset);
+    }
+
+
+  const auto  rect = Rect(0,0,model_renderer.get_x_width(),
+                              model_renderer.get_y_width());
+
+  model_renderer.draw_rect(rect,white);
 }
 
 
@@ -135,14 +192,15 @@ render()
 
       screen::clear();
 
-      directional_light::transformed_vector = view_tr(directional_light::vector);
 
       render_main();
-      render_sub();
+      render_model();
+      render_sample();
 
 
-      screen::put_renderer(main_renderer,0,0);
-      screen::put_renderer( sub_renderer,0,0);
+      screen::put_renderer(  main_renderer,0,0);
+      screen::put_renderer( model_renderer,model_renderer_x_pos,0);
+      screen::put_renderer(sample_renderer,0,0);
 
       screen::unlock();
       screen::update();
@@ -160,7 +218,7 @@ process_key(SDL_Keycode  k)
 
   auto  a = sample_tr.get_angle();
 
-  constexpr int  step = 5;
+  constexpr int  step = 15;
 
     switch(k)
     {
@@ -174,6 +232,29 @@ process_key(SDL_Keycode  k)
   sample_tr.change_angle(a);
 
   needed_to_redraw = true;
+}
+
+
+void
+refresh_model_polygons(uint32_t  id)
+{
+    for(auto&  po: model_polygons)
+    {
+      int  l = (po.id == id)? 0xFF:0x7F;
+
+      po.a.r = l;
+      po.a.g = l;
+      po.a.b = l;
+      po.b.r = l;
+      po.b.g = l;
+      po.b.b = l;
+      po.c.r = l;
+      po.c.g = l;
+      po.c.b = l;
+    }
+
+
+   needed_to_redraw = true;
 }
 
 
@@ -241,6 +322,38 @@ main_loop()
       static int  x_prev;
       static int  y_prev;
 
+        if((mouse.x >= (model_renderer_x_pos                             )) &&
+           (mouse.x <  (model_renderer_x_pos+model_renderer.get_x_width())) &&
+           (mouse.y <  (                     model_renderer.get_y_width())))
+        {
+          auto&  cell = model_renderer.get_cell(mouse.x-model_renderer_x_pos,mouse.y);
+
+            if(cell.id)
+            {
+              static uint32_t  prev_id;
+
+                if(cell.id != prev_id)
+                {
+                  prev_id = cell.id;
+
+                  refresh_model_polygons(cell.id);
+                }
+
+
+                if(mouse.left)
+                {
+                  auto&  model = model_polygons[cell.id-1];
+
+                  static_cast<Point&>(sample_polygon.a) = model.a;
+                  static_cast<Point&>(sample_polygon.b) = model.b;
+                  static_cast<Point&>(sample_polygon.c) = model.c;
+
+                  needed_to_redraw = true;
+                }
+            }
+        }
+
+      else
         if(mouse.left)
         {
           needed_to_redraw = true;
@@ -271,22 +384,24 @@ main_loop()
 void
 make_standard()
 {
+  int  l = 200;
+
   ObjectArray  arr;
 
-  arr.emplace_back(Line(Dot(Point(-400,   0,   0),black),
-                        Dot(Point(   0,   0,   0),red)));
-  arr.emplace_back(Line(Dot(Point(   0,   0,   0),red),
-                        Dot(Point( 400,   0,   0),white)));
+  arr.emplace_back(Line(Dot(Point(-l,   0,   0),black),
+                        Dot(Point( 0,   0,   0),red)));
+  arr.emplace_back(Line(Dot(Point( 0,   0,   0),red),
+                        Dot(Point( l,   0,   0),white)));
 
-  arr.emplace_back(Line(Dot(Point(   0,-400,   0),black),
-                        Dot(Point(   0,   0,   0),green)));
-  arr.emplace_back(Line(Dot(Point(   0,   0,   0),green),
-                        Dot(Point(   0, 400,   0),white)));
+  arr.emplace_back(Line(Dot(Point(   0,-l,   0),black),
+                        Dot(Point(   0, 0,   0),green)));
+  arr.emplace_back(Line(Dot(Point(   0, 0,   0),green),
+                        Dot(Point(   0, l,   0),white)));
 
-  arr.emplace_back(Line(Dot(Point(   0,   0,-400),black),
-                        Dot(Point(   0,   0,   0),blue)));
-  arr.emplace_back(Line(Dot(Point(   0,   0,   0),blue),
-                        Dot(Point(   0,   0, 400),white)));
+  arr.emplace_back(Line(Dot(Point(   0,   0,-l),black),
+                        Dot(Point(   0,   0, 0),blue)));
+  arr.emplace_back(Line(Dot(Point(   0,   0, 0),blue),
+                        Dot(Point(   0,   0, l),white)));
 
   Object::transform(arr,view_tr);
   Object::update(arr);
@@ -296,20 +411,22 @@ make_standard()
 
   arr.clear();
 
-  arr.emplace_back(Line(Dot(Point(-64,   0,   0),black),
-                        Dot(Point(  0,   0,   0),red)));
-  arr.emplace_back(Line(Dot(Point(  0,   0,   0),red),
-                        Dot(Point( 64,   0,   0),white)));
+  l = 80;
 
-  arr.emplace_back(Line(Dot(Point(   0,-64,   0),black),
-                        Dot(Point(   0,  0,   0),green)));
-  arr.emplace_back(Line(Dot(Point(   0,  0,   0),green),
-                        Dot(Point(   0, 64,   0),white)));
+  arr.emplace_back(Line(Dot(Point(-l,   0,   0),black),
+                        Dot(Point( 0,   0,   0),red)));
+  arr.emplace_back(Line(Dot(Point( 0,   0,   0),red),
+                        Dot(Point( l,   0,   0),white)));
 
-  arr.emplace_back(Line(Dot(Point(   0,   0,-64),black),
-                        Dot(Point(   0,   0,  0),blue)));
-  arr.emplace_back(Line(Dot(Point(   0,   0,  0),blue),
-                        Dot(Point(   0,   0, 64),white)));
+  arr.emplace_back(Line(Dot(Point(   0,-l,   0),black),
+                        Dot(Point(   0, 0,   0),green)));
+  arr.emplace_back(Line(Dot(Point(   0, 0,   0),green),
+                        Dot(Point(   0, l,   0),white)));
+
+  arr.emplace_back(Line(Dot(Point(   0,   0,-l),black),
+                        Dot(Point(   0,   0, 0),blue)));
+  arr.emplace_back(Line(Dot(Point(   0,   0, 0),blue),
+                        Dot(Point(   0,   0, l),white)));
 
   Object::transform(arr,view_tr);
   Object::update(arr);
@@ -328,19 +445,27 @@ main(int  argc, char**  argv)
 {
   screen::open();
 
+  texture.open("expandmetal.png");
+
   icon.open("icon.png");
 
-  view.src_point.y =  80;
-  view.src_point.z = 200;
+  Renderer::default_lightset.directional.vector = Vector(-1,0,-1);
+  Renderer::default_lightset.directional.color  = Color(0x7F,0x7F,0x7F,0xFF);
+  Renderer::default_lightset.ambient.color      = Color(0x3F,0x3F,0x3F,0xFF);
 
   view_tr.change_angle(315,-35,-30);
   view_tr.set_translation_flag();
   view_tr.set_rotation_flag();
   sample_tr.set_rotation_flag();
+  model_tr.set_rotation_flag();
 
+  Renderer::default_lightset.transform(view_tr);
 
   make_standard();
 
+  libjson::Value  v(libjson::FilePath("../object.txt"));
+
+  printf("%s\n",v.to_string().data());
 
   render();
 

@@ -6,7 +6,8 @@
 #include<cstdio>
 #include<algorithm>
 #include"isom_point.hpp"
-#include"isom_image.hpp"
+#include"isom_color.hpp"
+#include"isom_vertex.hpp"
 
 
 
@@ -58,9 +59,11 @@ public:
               value_type  y1_,
               value_type  z1_, value_type  dist);
 
-  LineContext(const Point&  a, const Point&  b                  );
-  LineContext(const Point&  a, const Point&  b, value_type  dist);
-  LineContext(const Color&  a, const Color&  b, value_type  dist);
+  LineContext(const Point&        a, const Point&        b                  );
+  LineContext(const Point&        a, const Point&        b, value_type  dist);
+  LineContext(const Color&        a, const Color&        b, value_type  dist);
+  LineContext(const Vertex&       a, const Vertex&       b, value_type  dist);
+  LineContext(const LineContext&  a, const LineContext&  b, value_type  dist);
 
 
   void  reset(value_type  x0_,

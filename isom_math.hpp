@@ -7,6 +7,7 @@
 #include<algorithm>
 #include<cstdio>
 #include<cstdlib>
+#include<cstdarg>
 
 
 constexpr double  pi = 3.14159265358979323846;
@@ -36,6 +37,26 @@ to_degree(double  rad)
 
 int  get_randint(int  min, int  max);
 
+
+
+struct
+Formatted
+{
+  char  buf[256];
+
+  const char*  operator()(const char*  fmt, ...)
+  {
+    va_list  ap;
+    va_start(ap,fmt);
+
+    vsnprintf(buf,sizeof(buf),fmt,ap);
+
+    va_end(ap);
+
+    return buf;
+  }
+
+};
 
 
 constexpr int  value_table_size = 360/5+1;

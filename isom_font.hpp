@@ -7,6 +7,14 @@
 
 
 struct
+AsciiGlyph
+{
+  uint8_t  data[8];
+
+};
+
+
+struct
 Glyph
 {
   static constexpr int  size = 14;

@@ -169,17 +169,16 @@ put_color_safely(uint32_t  color, int  x, int  y)
 
 
 void
-put_renderer(const Renderer&  src, int  x, int  y, int  w, int  h)
+put_renderer(const Renderer&  src, int  x, int  y)
 {
-    if(!w){w = src.get_x_width();}
-    if(!h){h = src.get_y_width();}
-
+  int  w = src.get_x_width();
+  int  h = src.get_y_width();
 
     for(int  yy = 0;  yy < h;  ++yy){
     for(int  xx = 0;  xx < w;  ++xx){
-      auto&  cell = src.get_cell(x+xx,y+yy);
+      auto&  cell = src.get_cell(xx,yy);
 
-      put_color(get_color(cell.r,cell.g,cell.b),xx,yy);
+      put_color(get_color(cell.r,cell.g,cell.b),x+xx,y+yy);
     }}
 }
 

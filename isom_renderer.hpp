@@ -10,7 +10,7 @@
 #include"isom_image.hpp"
 #include"isom_LineContext.hpp"
 #include"isom_font.hpp"
-#include"isom_light.hpp"
+#include"isom_LightSet.hpp"
 
 
 
@@ -44,7 +44,11 @@ Renderer
   int  bottom;
 
 public:
-  Renderer(int  x=0, int  y=0, int  w=0, int  h=0);
+  static LightSet  default_lightset;
+
+  const LightSet*  lightset;
+
+  Renderer(int  x=0, int  y=0, int  w=0, int  h=0, const LightSet*  ls=&default_lightset);
 
   void  clear();
 
@@ -70,10 +74,14 @@ public:
   void  draw_line(const Color&  color, int  x0, int  y0, int  x1, int  y1, int  interval=0);
   void  draw_rect(const Rect&  rect, const Color&  color);
   void  fill_rect(const Rect&  rect, const Color&  color);
+  void  fill_rect(const Rect&  rect, uint32_t  id);
 
   void  draw_glyph(const Glyph*  gl,    const Color&  color, int  x, int  y);
   void  draw_string(const char*  s,     const Color&  color, int  x, int  y);
   void  draw_string(const char16_t*  s, const Color&  color, int  x, int  y);
+
+  void  draw_ascii_glyph(const AsciiGlyph*  gl, const Color&  color, int  x, int  y);
+  void  draw_ascii(      const char*         s, const Color&  color, int  x, int  y);
 
 };
 

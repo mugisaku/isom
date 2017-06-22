@@ -46,6 +46,9 @@ endif()
 
 
 set(SOURCES
+  libjson/json_stream.cpp
+  libjson/json_stream__scan.cpp
+  libjson/json_value.cpp
   isom_LineContext.cpp
   isom_point.cpp
   isom_transformer.cpp
@@ -53,15 +56,12 @@ set(SOURCES
   isom_DotSet.cpp
   isom_line.cpp
   isom_polygon.cpp
-  isom_plane.cpp
-  isom_box.cpp
   isom_object.cpp
   isom_renderer.cpp
   isom_renderer__draw.cpp
   isom_view.cpp
   isom_ViewController.cpp
   isom_math.cpp
-  isom_light.cpp
   isom_font.cpp
   isom_image.cpp
   isom_screen.cpp
@@ -74,6 +74,7 @@ add_executable("testBox${EXTENSION}" testBox.cpp ${SOURCES})
 add_executable("testLineContext${EXTENSION}" testLineContext.cpp ${SOURCES})
 add_executable("testTextureRenderingContext${EXTENSION}" testTextureRenderingContext.cpp ${SOURCES})
 add_executable("testBuilding${EXTENSION}" testBuilding.cpp ${SOURCES})
+add_executable("testCoBuilder${EXTENSION}" testCoBuilder.cpp ${SOURCES})
 
 
 if(EM)

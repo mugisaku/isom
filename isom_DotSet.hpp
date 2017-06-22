@@ -22,7 +22,7 @@ DotSet
 
   void  transform(const Transformer&  tr);
 
-  void  render(Renderer&  dst) const;
+  void  render(Renderer&  dst, uint32_t  id=0) const;
 
 };
 

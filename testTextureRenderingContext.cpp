@@ -5,7 +5,7 @@
 #include"isom_screen.hpp"
 #include"isom_image.hpp"
 #include"isom_point.hpp"
-#include"isom_plane.hpp"
+#include"isom_polygon.hpp"
 #include"isom_renderer.hpp"
 
 
@@ -31,7 +31,16 @@ Image
 texture;
 
 
-Plane  plane;
+Polygon
+plane[2] =
+{
+  Polygon(0,Vertex( 0, 0,0, 0,sz),
+            Vertex(sz, 0,0,sz,sz),
+            Vertex(sz,sz,0,sz, 0)),
+  Polygon(0,Vertex( 0, 0,0, 0,sz),
+            Vertex(sz,sz,0,sz, 0),
+            Vertex( 0,sz,0, 0, 0)),
+};
 
 
 Transformer  tr;
@@ -73,13 +82,15 @@ render()
         }
 
 
-      auto  tmplane = plane;
+        for(auto  p: plane)
+        {
+          p.transform(tr);
 
-      tmplane.transform(tr);
+          p.update();
 
-      tmplane.update();
+          p.produce_wire_dotset(wire_dotset);
+        }
 
-      tmplane.produce_wire_dotset(wire_dotset);
 
       wire_dotset.render(renderer);
 
@@ -113,8 +124,8 @@ step()
             {
               auto&  v = buffer[--index];
 
-                   dotset->emplace_back(Point(v.x,v.y,v.z),texture.get_color(v.u,v.v));
-              nega_dotset->emplace_back(Point(v.u,v.v,  0),            Color(       ));
+                   dotset->emplace_back(Point(v.x,v.y,v.z),texture.get_color(v.get_u(),v.get_v()));
+              nega_dotset->emplace_back(Point(v.get_u(),v.get_v(),0),  Color(                   ));
 
                 if(!index)
                 {
@@ -164,14 +175,14 @@ process_keydown(int  key)
            dotset->clear();
       nega_dotset->clear();
 
-      auto  tmplane = plane;
+        for(auto  po: plane)
+        {
+          po.transform(tr);
 
-      tmplane.transform(tr);
+          po.update();
 
-      tmplane.update();
-
-      tmplane.polygons[0].produce_vertex_string(buffer);
-      tmplane.polygons[1].produce_vertex_string(buffer);
+          po.produce_vertex_string(buffer);
+        }
 
 
       index = buffer.size();
@@ -226,15 +237,6 @@ main(int  argc, char**  argv)
   screen::open();
 
   texture.open("lena_std.png");
-
-  plane.build_x(Point(0,0,0),sz,sz,true);
-
-  plane.image = &texture;
-
-  plane.preset_uv(Rect(0,0,sz,sz),true);
-
-
-  plane.update();
 
 
   tr.set_rotation_flag();

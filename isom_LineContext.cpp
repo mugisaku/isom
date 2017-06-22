@@ -55,6 +55,30 @@ LineContext(const Color&  a, const Color&  b, value_type  dist)
 }
 
 
+LineContext::
+LineContext(const Vertex&  a, const Vertex&  b, value_type  dist)
+{
+  reset(a.r,
+        a.g,
+        a.b,
+        b.r,
+        b.g,
+        b.b,dist);
+}
+
+
+LineContext::
+LineContext(const LineContext&  a, const LineContext&  b, value_type  dist)
+{
+  reset(a.get_x(),
+        a.get_y(),
+        a.get_z(),
+        b.get_x(),
+        b.get_y(),
+        b.get_z(),dist);
+}
+
+
 
 
 void
