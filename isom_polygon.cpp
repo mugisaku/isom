@@ -16,24 +16,6 @@ transform(const Transformer&  tr)
 
 
 
-void
-Polygon::
-update()
-{
-  Vector  aa(a);
-  Vector  bb(b);
-  Vector  cc(c);
-
-  Vector  ab(bb-aa);
-  Vector  bc(cc-bb);
-
-
-  normal_vector = ab*bc;
-
-  normal_vector.normalize();
-}
-
-
 namespace{
 
 
@@ -141,8 +123,19 @@ produce_vertex_string(VertexString&  s) const
 
 void
 Polygon::
-produce_dotset(const Image*  texture_image, DotSet&  dotset) const
+produce_dotset(DotSet&  dotset) const
 {
+  Vector  aa(a);
+  Vector  bb(b);
+  Vector  cc(c);
+
+  Vector  ab(bb-aa);
+  Vector  bc(cc-bb);
+
+  auto  normal_vector = ab*bc;
+
+  normal_vector.normalize();
+
     if(normal_vector.z < 0)
     {
       produce_wire_dotset(dotset);
@@ -179,8 +172,19 @@ produce_dotset(const Image*  texture_image, DotSet&  dotset) const
 
 void
 Polygon::
-produce_dotset(const LightSet&  lightset, const Image*  texture_image, DotSet&  dotset) const
+produce_dotset(const LightSet&  lightset, DotSet&  dotset) const
 {
+  Vector  aa(a);
+  Vector  bb(b);
+  Vector  cc(c);
+
+  Vector  ab(bb-aa);
+  Vector  bc(cc-bb);
+
+  auto  normal_vector = ab*bc;
+
+  normal_vector.normalize();
+
     if(normal_vector.z < 0)
     {
       produce_wire_dotset(dotset);

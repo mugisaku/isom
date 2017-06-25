@@ -86,8 +86,6 @@ render()
         {
           p.transform(tr);
 
-          p.update();
-
           p.produce_wire_dotset(wire_dotset);
         }
 
@@ -178,8 +176,6 @@ process_keydown(int  key)
         for(auto  po: plane)
         {
           po.transform(tr);
-
-          po.update();
 
           po.produce_vertex_string(buffer);
         }

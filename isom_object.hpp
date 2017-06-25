@@ -9,6 +9,7 @@
 #include"isom_image.hpp"
 #include"isom_line.hpp"
 #include"isom_polygon.hpp"
+#include"isom_tetragon.hpp"
 
 
 
@@ -19,6 +20,7 @@ ObjectKind
   null,
   line,
   polygon,
+  tetragon,
   object_array,
 
 };
@@ -32,8 +34,9 @@ using ObjectArray = std::vector<Object>;
 union
 ObjectData
 {
-  Line        line;
-  Polygon  polygon;
+  Line          line;
+  Polygon    polygon;
+  Tetragon  tetragon;
 
   ObjectArray    object_array;
 
@@ -53,9 +56,10 @@ Object
 
 public:
   Object();
-  Object(Line&&                 ln);
-  Object(Polygon&&              po);
-  Object(ObjectArray&&       objar);
+  Object(const Line&            ln);
+  Object(const Polygon&         po);
+  Object(const Tetragon&        te);
+  Object(const ObjectArray&  objar);
   Object(const Object&   rhs) noexcept;
   Object(      Object&&  rhs) noexcept;
  ~Object();
@@ -74,14 +78,10 @@ public:
 
   void  transform(const Transformer&  tr);
 
-  void  update();
-
   void  produce_dotset(DotSet&  set) const;
 
 
   static void  transform(ObjectArray&  arr, const Transformer&  tr);
-
-  static void  update(ObjectArray&  arr);
 
   static void  produce_dotset(const ObjectArray&  arr, DotSet&  set);
 

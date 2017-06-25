@@ -51,8 +51,6 @@ render()
 
       o.transform(tr);
 
-      o.update();
-
 //      o.render(renderer);
 
 

@@ -105,8 +105,6 @@ render_main()
 
   arr.clear();
 
-  Object::update(arr);
-
   Object::produce_dotset(arr,dotset);
 
   dotset.render(main_renderer);
@@ -136,9 +134,8 @@ render_sample()
 
   po.transform(sample_tr);
   po.transform(  view_tr);
-  po.update();
 
-  po.produce_dotset(nullptr,dotset);
+  po.produce_dotset(dotset);
 
   dotset.render(sample_renderer,po.id);
 
@@ -166,9 +163,8 @@ render_model()
 
       bo.transform(model_tr);
       bo.transform( view_tr);
-      bo.update();
 
-      bo.produce_dotset(nullptr,dotset);
+      bo.produce_dotset(dotset);
 
       dotset.render(model_renderer,bo.id);
 
@@ -404,7 +400,6 @@ make_standard()
                         Dot(Point(   0,   0, l),white)));
 
   Object::transform(arr,view_tr);
-  Object::update(arr);
 
   Object::produce_dotset(arr,standard);
 
@@ -429,7 +424,6 @@ make_standard()
                         Dot(Point(   0,   0, l),white)));
 
   Object::transform(arr,view_tr);
-  Object::update(arr);
 
   Object::produce_dotset(arr,mini_standard);
 }
@@ -463,7 +457,7 @@ main(int  argc, char**  argv)
 
   make_standard();
 
-  libjson::Value  v(libjson::FilePath("../object.txt"));
+  libjson::Value  v(FilePath("../object.txt"));
 
   printf("%s\n",v.to_string().data());
 

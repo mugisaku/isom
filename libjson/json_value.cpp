@@ -12,41 +12,9 @@
 namespace libjson{
 
 
-namespace{
-std::string
-load(const char*  path)
-{
-  std::string  s;
-
-  auto  f = fopen(path,"rb");
-
-    if(f)
-    {
-        for(;;)
-        {
-          auto  c = fgetc(f);
-
-            if(feof(f))
-            {
-              break;
-            }
-
-
-          s.push_back(c);
-        }
-
-
-      fclose(f);
-    }
-
-
-  return std::move(s);
-}
-}
-
-
 Value::Value(): kind(ValueKind::undefined){}
-Value::Value(FilePath  path): kind(ValueKind::undefined){*this = Stream(load(path.string).data()).get_value();}
+Value::Value(FilePath&&  fpath): kind(ValueKind::undefined){*this = Stream(FileBuffer(std::move(fpath)).get_content().data()).get_value();}
+Value::Value(const FileBuffer&  fbuf): kind(ValueKind::undefined){*this = Stream(fbuf.get_content().data()).get_value();}
 Value::Value(Null  null): kind(ValueKind::null){}
 Value::Value(bool    b): kind(b? ValueKind::true_:ValueKind::false_){}
 Value::Value(int     i): kind(ValueKind::number){data.number = i;}

@@ -7,8 +7,8 @@
 #include"isom_point.hpp"
 #include"isom_object.hpp"
 #include"isom_renderer.hpp"
-#include"libjson/json.hpp"
-#include"libjson/json_stream.hpp"
+#include"isom_load.hpp"
+#include"libjson/json_FileBuffer.hpp"
 
 
 #ifdef EMSCRIPTEN
@@ -24,101 +24,15 @@ bool  needed_to_redraw = true;
 Renderer  main_renderer(   0,0,screen::width,screen::height);
 
 
-DotSet  standard;
+ObjectArray  standard;
 
 
 Transformer    view_tr;
 Transformer  object_tr;
 
 
-std::vector<Polygon>
-polygon_table;
-
-
-Vertex
-read_vertex(const libjson::Object&  o)
-{
-  using namespace libjson;
-
-  Vertex  v;
-
-    for(auto&  m: o)
-    {
-           if(m.name == "x"){v.x = m.value.to_number();}
-      else if(m.name == "y"){v.y = m.value.to_number();}
-      else if(m.name == "z"){v.z = m.value.to_number();}
-      else if(m.name == "r"){v.r = m.value.to_number();}
-      else if(m.name == "g"){v.g = m.value.to_number();}
-      else if(m.name == "b"){v.b = m.value.to_number();}
-      else if(m.name == "u"){v.r = m.value.to_number();}
-      else if(m.name == "v"){v.g = m.value.to_number();}
-    }
-
-
-  return v;
-}
-
-
-Polygon
-read_polygon(const libjson::Object&  o)
-{
-  using namespace libjson;
-
-  Color  default_color;
-
-  Polygon  po;
-
-    for(auto&  m: o)
-    {
-        if(m.value == ValueKind::object)
-        {
-               if(m.name == "a"){po.a = read_vertex(m.value->object);}
-          else if(m.name == "b"){po.b = read_vertex(m.value->object);}
-          else if(m.name == "c"){po.c = read_vertex(m.value->object);}
-        }
-    }
-
-
-  return po;
-}
-
-
-void
-load_object()
-{
-  using namespace libjson;
-
-  std::vector<Polygon>  new_arr;
-
-    try
-    {
-      Value  v(FilePath("../object.txt"));
-
-        if(v == ValueKind::array)
-        {
-            for(auto&  e: v->array)
-            {
-                if(e == ValueKind::object)
-                {
-                  new_arr.emplace_back(read_polygon(e->object));
-                }
-            }
-        }
-    }
-
-
-    catch(Stream&  s)
-    {
-      s.print();
-
-      return;
-    }
-
-
-  polygon_table = std::move(new_arr);
-
-  needed_to_redraw = true;
-}
+ObjectArray
+objects;
 
 
 void
@@ -130,18 +44,21 @@ render_main()
 
   main_renderer.clear();
 
-
-  standard.render(main_renderer);
-
-
-    for(auto  o: polygon_table)
+    for(auto  o: standard)
     {
       o.transform(object_tr);
       o.transform(  view_tr);
 
-      o.update();
+      o.produce_dotset(dotset);
+    }
 
-      o.produce_dotset(nullptr,dotset);
+
+    for(auto  o: objects)
+    {
+      o.transform(object_tr);
+      o.transform(  view_tr);
+
+      o.produce_dotset(dotset);
     }
 
 
@@ -194,6 +111,24 @@ main_loop()
           quick_exit(EXIT_SUCCESS);
           break;
 #endif
+      case(SDL_KEYDOWN):
+            if(evt.key.keysym.sym == SDLK_SPACE)
+            {
+              FileBuffer  fbuf(FilePath("../object.txt"));
+
+              load_object(fbuf.get_content().data(),objects);
+
+
+              auto  a = object_tr.get_angle();
+
+              a.y = 0;
+
+              object_tr.change_angle(a);
+
+
+              needed_to_redraw = true;
+            }
+          break;
         }
     }
 
@@ -204,8 +139,6 @@ main_loop()
 
     if(now >= last+100)
     {
-      load_object();
-
       last = now;
 
       auto  a = object_tr.get_angle();
@@ -227,27 +160,20 @@ make_standard()
 {
   int  l = 200;
 
-  ObjectArray  arr;
+  standard.emplace_back(Line(Dot(Point(-l,   0,   0),black),
+                             Dot(Point( 0,   0,   0),red)));
+  standard.emplace_back(Line(Dot(Point( 0,   0,   0),red),
+                             Dot(Point( l,   0,   0),white)));
 
-  arr.emplace_back(Line(Dot(Point(-l,   0,   0),black),
-                        Dot(Point( 0,   0,   0),red)));
-  arr.emplace_back(Line(Dot(Point( 0,   0,   0),red),
-                        Dot(Point( l,   0,   0),white)));
+  standard.emplace_back(Line(Dot(Point(   0,-l,   0),black),
+                             Dot(Point(   0, 0,   0),green)));
+  standard.emplace_back(Line(Dot(Point(   0, 0,   0),green),
+                             Dot(Point(   0, l,   0),white)));
 
-  arr.emplace_back(Line(Dot(Point(   0,-l,   0),black),
-                        Dot(Point(   0, 0,   0),green)));
-  arr.emplace_back(Line(Dot(Point(   0, 0,   0),green),
-                        Dot(Point(   0, l,   0),white)));
-
-  arr.emplace_back(Line(Dot(Point(   0,   0,-l),black),
-                        Dot(Point(   0,   0, 0),blue)));
-  arr.emplace_back(Line(Dot(Point(   0,   0, 0),blue),
-                        Dot(Point(   0,   0, l),white)));
-
-  Object::transform(arr,view_tr);
-  Object::update(arr);
-
-  Object::produce_dotset(arr,standard);
+  standard.emplace_back(Line(Dot(Point(   0,   0,-l),black),
+                             Dot(Point(   0,   0, 0),blue)));
+  standard.emplace_back(Line(Dot(Point(   0,   0, 0),blue),
+                             Dot(Point(   0,   0, l),white)));
 }
 
 
@@ -274,8 +200,6 @@ main(int  argc, char**  argv)
   Renderer::default_lightset.transform(view_tr);
 
   make_standard();
-
-  load_object();
 
   render();
 

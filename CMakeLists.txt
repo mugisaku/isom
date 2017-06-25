@@ -49,6 +49,7 @@ set(SOURCES
   libjson/json_stream.cpp
   libjson/json_stream__scan.cpp
   libjson/json_value.cpp
+  libjson/json_FileBuffer.cpp
   isom_LineContext.cpp
   isom_point.cpp
   isom_transformer.cpp
@@ -56,6 +57,7 @@ set(SOURCES
   isom_DotSet.cpp
   isom_line.cpp
   isom_polygon.cpp
+  isom_tetragon.cpp
   isom_object.cpp
   isom_renderer.cpp
   isom_renderer__draw.cpp
@@ -65,6 +67,7 @@ set(SOURCES
   isom_font.cpp
   isom_image.cpp
   isom_screen.cpp
+  isom_load.cpp
 )
 
 

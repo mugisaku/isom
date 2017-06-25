@@ -1,5 +1,5 @@
-#ifndef ISOM_Polygon_HPP_INCLUDED
-#define ISOM_Polygon_HPP_INCLUDED
+#ifndef ISOM_Tetragon_HPP_INCLUDED
+#define ISOM_Tetragon_HPP_INCLUDED
 
 
 #include"isom_dot.hpp"
@@ -12,20 +12,22 @@
 
 
 struct
-Polygon
+Tetragon
 {
   uint32_t  id;
 
   Vertex  a;
   Vertex  b;
   Vertex  c;
+  Vertex  d;
 
   const Image*  texture_image;
 
-  constexpr Polygon(uint32_t  id_=0, const Vertex&  a_=Vertex(),
-                                     const Vertex&  b_=Vertex(),
-                                     const Vertex&  c_=Vertex()):
-  id(id_), a(a_), b(b_), c(c_), texture_image(nullptr){}
+  constexpr Tetragon(uint32_t  id_=0, const Vertex&  a_=Vertex(),
+                                      const Vertex&  b_=Vertex(),
+                                      const Vertex&  c_=Vertex(),
+                                      const Vertex&  d_=Vertex()):
+  id(id_), a(a_), b(b_), c(c_), d(d_), texture_image(nullptr){}
 
 
   void  transform(const Transformer&  tr);

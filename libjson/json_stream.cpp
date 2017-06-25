@@ -186,7 +186,12 @@ print() const
     }
 
 
-  printf("\n[行%4d:列%4d]\n",row_number,column_number);
+  printf("[行%4d:列%4d]\n",row_number+1,column_number+1);
+
+    for(auto&  s: message_stack)
+    {
+      printf("%s\n",s.data());
+    }
 }
 
 

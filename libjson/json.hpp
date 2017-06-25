@@ -4,7 +4,7 @@
 
 #include<string>
 #include<vector>
-#include<cstdio>
+#include"json_FileBuffer.hpp"
 
 
 
@@ -55,16 +55,6 @@ struct Undefined{};
 struct Null{};
 
 
-struct
-FilePath
-{
-  const char*  const string;
-
-constexpr FilePath(const char*  s): string(s){}
-
-};
-
-
 class
 Value
 {
@@ -73,7 +63,8 @@ Value
 
 public:
    Value();
-   Value(FilePath  path);
+   Value(FilePath&&  fpath);
+   Value(const FileBuffer&  fbuf);
    Value(Null  null);
    Value(bool    b);
    Value(int     i);

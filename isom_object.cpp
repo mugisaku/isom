@@ -4,10 +4,11 @@
 
 
 
-Object::Object(                       ): id(0), kind(ObjectKind::null        ){}
-Object::Object(Line&&               ln): id(0), kind(ObjectKind::line        ){new(&data) Line(std::move(ln));}
-Object::Object(Polygon&&            po): id(0), kind(ObjectKind::polygon     ){new(&data) Polygon(std::move(po));}
-Object::Object(ObjectArray&&     objar): id(0), kind(ObjectKind::object_array){new(&data) ObjectArray(std::move(objar));}
+Object::Object(                         ): id(0), kind(ObjectKind::null        ){}
+Object::Object(const Line&            ln): id(0), kind(ObjectKind::line        ){new(&data) Line(ln);}
+Object::Object(const Polygon&         po): id(0), kind(ObjectKind::polygon     ){new(&data) Polygon(po);}
+Object::Object(const Tetragon&        te): id(0), kind(ObjectKind::tetragon    ){new(&data) Tetragon(te);}
+Object::Object(const ObjectArray&  objar): id(0), kind(ObjectKind::object_array){new(&data) ObjectArray(objar);}
 Object::Object(const Object&   rhs) noexcept: id(0), kind(ObjectKind::null){*this = rhs;}
 Object::Object(      Object&&  rhs) noexcept: id(0), kind(ObjectKind::null){*this = std::move(rhs);}
 
@@ -40,6 +41,9 @@ operator=(const Object&   rhs) noexcept
   case(ObjectKind::polygon):
       new(&data) Polygon(rhs.data.polygon);
       break;
+  case(ObjectKind::tetragon):
+      new(&data) Tetragon(rhs.data.tetragon);
+      break;
   case(ObjectKind::object_array):
       new(&data) ObjectArray(rhs.data.object_array);
       break;
@@ -71,6 +75,9 @@ operator=(Object&&  rhs) noexcept
   case(ObjectKind::polygon):
       new(&data) Polygon(std::move(rhs.data.polygon));
       break;
+  case(ObjectKind::tetragon):
+      new(&data) Tetragon(std::move(rhs.data.tetragon));
+      break;
   case(ObjectKind::object_array):
       new(&data) ObjectArray(std::move(rhs.data.object_array));
       break;
@@ -97,6 +104,9 @@ clear()
       break;
   case(ObjectKind::polygon):
       data.polygon.~Polygon();
+      break;
+  case(ObjectKind::tetragon):
+      data.tetragon.~Tetragon();
       break;
   case(ObjectKind::object_array):
       data.object_array.~ObjectArray();
@@ -125,29 +135,11 @@ transform(const Transformer&  tr)
   case(ObjectKind::polygon):
       data.polygon.transform(tr);
       break;
+  case(ObjectKind::tetragon):
+      data.tetragon.transform(tr);
+      break;
   case(ObjectKind::object_array):
       transform(data.object_array,tr);
-      break;
-  default:;
-    }
-}
-
-
-void
-Object::
-update()
-{
-    switch(kind)
-    {
-  case(ObjectKind::null):
-      break;
-  case(ObjectKind::line):
-      break;
-  case(ObjectKind::polygon):
-      data.polygon.update();
-      break;
-  case(ObjectKind::object_array):
-      update(data.object_array);
       break;
   default:;
     }
@@ -166,7 +158,10 @@ produce_dotset(DotSet&  set) const
       data.line.produce_dotset(set);
       break;
   case(ObjectKind::polygon):
-      data.polygon.produce_dotset(nullptr,set);
+      data.polygon.produce_dotset(set);
+      break;
+  case(ObjectKind::tetragon):
+      data.tetragon.produce_dotset(set);
       break;
   case(ObjectKind::object_array):
       produce_dotset(data.object_array,set);
@@ -185,17 +180,6 @@ transform(ObjectArray&  arr, const Transformer&  tr)
     for(auto&  obj: arr)
     {
       obj.transform(tr);
-    }
-}
-
-
-void
-Object::
-update(ObjectArray&  arr)
-{
-    for(auto&  obj: arr)
-    {
-      obj.update();
     }
 }
 
