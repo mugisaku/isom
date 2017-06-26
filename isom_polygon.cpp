@@ -19,13 +19,28 @@ transform(const Transformer&  tr)
 namespace{
 
 
-VertexString
-buffer;
+struct
+Required
+{
+  const Polygon*  target;
+
+  const LightSet*  lightset;
+
+  DotSet*  dotset;
+
+  Renderer*  renderer;
+
+  double  lighting;
+
+};
+
+
+using Callback = void(*)(const Required&  req, int  x, int  y, int  z, int  r, int  g, int  b);
 
 
 void
 process(LineContext&   longer, LineContext&   longer_mapper,
-        LineContext&  shorter, LineContext&  shorter_mapper)
+        LineContext&  shorter, LineContext&  shorter_mapper, Callback  cb, const Required&  req)
 {
     for(;;)
     {
@@ -52,8 +67,8 @@ process(LineContext&   longer, LineContext&   longer_mapper,
 
         for(;;)
         {
-          buffer.emplace_back(plotter.get_x(),plotter.get_y(),plotter.get_z(),
-                               mapper.get_x(), mapper.get_y(), mapper.get_z());
+          cb(req,plotter.get_x(),plotter.get_y(),plotter.get_z(),
+                  mapper.get_x(), mapper.get_y(), mapper.get_z());
 
             if(plotter.is_finished())
             {
@@ -78,26 +93,70 @@ process(LineContext&   longer, LineContext&   longer_mapper,
 
 
 void
-prerender(const Polygon&  poly)
+render_internal(const Required&  req, int  x, int  y, int  z, int  r, int  g, int  b)
 {
-  using T = const Vertex&;
+  auto&  dlcolor = req.lightset->directional.color;
+  auto&  abcolor =     req.lightset->ambient.color;
 
-  auto&     top = static_cast<T>(::upper(poly.a,::upper(poly.b,poly.c)));
-  auto&  bottom = static_cast<T>(::lower(poly.a,::lower(poly.b,poly.c)));
+    if(req.target->texture_image)
+    {
+      auto&  src_color = req.target->texture_image->get_color(r,g);
 
-  auto&  middle = static_cast<T>(((&poly.a != &top) && (&poly.a != &bottom))? poly.a:
-                                 ((&poly.b != &top) && (&poly.b != &bottom))? poly.b:poly.c);
+      r = abcolor.r+(dlcolor.r*req.lighting);
+      g = abcolor.g+(dlcolor.g*req.lighting);
+      b = abcolor.b+(dlcolor.b*req.lighting);
 
-  LineContext  longer(   top,bottom);
-  LineContext   upper(   top,middle);
-  LineContext   lower(middle,bottom);
+      r = (r+src_color.r)/2;
+      g = (g+src_color.g)/2;
+      b = (b+src_color.b)/2;
 
-  LineContext  longer_mapper(   top,bottom,longer.get_distance());
-  LineContext   upper_mapper(   top,middle, upper.get_distance());
-  LineContext   lower_mapper(middle,bottom, lower.get_distance());
+        if(r > 255){r = 255;}
+        if(g > 255){g = 255;}
+        if(b > 255){b = 255;}
 
-  process(longer,longer_mapper,upper,upper_mapper);
-  process(longer,longer_mapper,lower,lower_mapper);
+
+      Color  color(r,g,b,255);
+
+        if(req.dotset)
+        {
+          (*req.dotset)->emplace_back(Point(x,y,z),color);
+        }
+
+      else
+        if(req.renderer)
+        {
+          req.renderer->put(color,x,y,z,0);
+        }
+    }
+
+  else
+    {
+      int  r_base = abcolor.r+(dlcolor.r*req.lighting);
+      int  g_base = abcolor.g+(dlcolor.g*req.lighting);
+      int  b_base = abcolor.b+(dlcolor.b*req.lighting);
+
+      r += r_base;
+      g += g_base;
+      b += b_base;
+
+        if(r > 255){r = 255;}
+        if(g > 255){g = 255;}
+        if(b > 255){b = 255;}
+
+
+      Color  color(r,g,b,255);
+
+        if(req.dotset)
+        {
+          (*req.dotset)->emplace_back(Point(x,y,z),color);
+        }
+
+      else
+        if(req.renderer)
+        {
+          req.renderer->put(color,x,y,z,0);
+        }
+    }
 }
 
 
@@ -108,14 +167,6 @@ void
 Polygon::
 produce_vertex_string(VertexString&  s) const
 {
-  buffer.clear();
-
-  prerender(*this);
-
-    for(auto&  v: buffer)
-    {
-      s.emplace_back(v);
-    }
 }
 
 
@@ -123,11 +174,11 @@ produce_vertex_string(VertexString&  s) const
 
 void
 Polygon::
-produce_dotset(DotSet&  dotset) const
+render(const Polygon&  self, DotSet*  dotset, Renderer*  renderer, const LightSet*  lightset)
 {
-  Vector  aa(a);
-  Vector  bb(b);
-  Vector  cc(c);
+  Vector  aa(self.a);
+  Vector  bb(self.b);
+  Vector  cc(self.c);
 
   Vector  ab(bb-aa);
   Vector  bc(cc-bb);
@@ -138,125 +189,60 @@ produce_dotset(DotSet&  dotset) const
 
     if(normal_vector.z < 0)
     {
-      produce_wire_dotset(dotset);
+           if(dotset  ){self.produce_wire_dotset(*dotset);}
+      else if(renderer){self.render_wire(*renderer);}
 
       return;
     }
 
 
-  buffer.clear();
+  using T = const Vertex&;
 
-  prerender(*this);
+  auto&     top = static_cast<T>(::upper(self.a,::upper(self.b,self.c)));
+  auto&  bottom = static_cast<T>(::lower(self.a,::lower(self.b,self.c)));
 
-    if(texture_image)
+  auto&  middle = static_cast<T>(((&self.a != &top) && (&self.a != &bottom))? self.a:
+                                 ((&self.b != &top) && (&self.b != &bottom))? self.b:self.c);
+
+  LineContext  longer(   top,bottom);
+  LineContext   upper(   top,middle);
+  LineContext   lower(middle,bottom);
+
+  LineContext  longer_mapper(   top,bottom,longer.get_distance());
+  LineContext   upper_mapper(   top,middle, upper.get_distance());
+  LineContext   lower_mapper(middle,bottom, lower.get_distance());
+
+  Required  r;
+
+  r.target = &self;
+  r.dotset = dotset;
+  r.renderer = renderer;
+  r.lightset = lightset;
+
+    if(lightset)
     {
-        for(auto&  v: buffer)
-        {
-          auto&  color = texture_image->get_color(v.get_u(),v.get_v());
+      r.lighting = -Vector::dot_product(lightset->directional.transformed_vector,normal_vector);
 
-          dotset->emplace_back(Point(v.x,v.y,v.z),color);
+      r.lighting = (1+r.lighting)/2;
+
+        if(std::isnan(r.lighting))
+        {
+          r.lighting = 0;
         }
     }
 
-  else
-    {
-        for(auto&  v: buffer)
-        {
-          Color  color(v.r,v.g,v.b,255);
 
-          dotset->emplace_back(Point(v.x,v.y,v.z),color);
-        }
-    }
+  process(longer,longer_mapper,upper,upper_mapper,render_internal,r);
+  process(longer,longer_mapper,lower,lower_mapper,render_internal,r);
 }
+
 
 
 void
 Polygon::
-produce_dotset(const LightSet&  lightset, DotSet&  dotset) const
+produce_dotset(DotSet&  dotset, const LightSet*  lightset) const
 {
-  Vector  aa(a);
-  Vector  bb(b);
-  Vector  cc(c);
-
-  Vector  ab(bb-aa);
-  Vector  bc(cc-bb);
-
-  auto  normal_vector = ab*bc;
-
-  normal_vector.normalize();
-
-    if(normal_vector.z < 0)
-    {
-      produce_wire_dotset(dotset);
-
-      return;
-    }
-
-
-  buffer.clear();
-
-  prerender(*this);
-
-  auto  p = -Vector::dot_product(lightset.directional.transformed_vector,normal_vector);
-
-  p = (1+p)/2;
-
-    if(std::isnan(p))
-    {
-      p = 0;
-    }
-
-
-  auto&  dlcolor = lightset.directional.color;
-  auto&  abcolor =     lightset.ambient.color;
-
-    if(texture_image)
-    {
-        for(auto&  v: buffer)
-        {
-          auto&  src_color = texture_image->get_color(v.get_u(),v.get_v());
-
-          int  r = abcolor.r+(dlcolor.r*p);
-          int  g = abcolor.g+(dlcolor.g*p);
-          int  b = abcolor.b+(dlcolor.b*p);
-
-          r = (r+src_color.r)/2;
-          g = (g+src_color.g)/2;
-          b = (b+src_color.b)/2;
-
-            if(r > 255){r = 255;}
-            if(g > 255){g = 255;}
-            if(b > 255){b = 255;}
-
-
-          Color  color(r,g,b,255);
-
-          dotset->emplace_back(Point(v.x,v.y,v.z),color);
-        }
-    }
-
-  else
-    {
-      int  r_base = abcolor.r+(dlcolor.r*p);
-      int  g_base = abcolor.g+(dlcolor.g*p);
-      int  b_base = abcolor.b+(dlcolor.b*p);
-
-        for(auto&  v: buffer)
-        {
-          int  r = r_base+v.r;
-          int  g = g_base+v.g;
-          int  b = b_base+v.b;
-
-            if(r > 255){r = 255;}
-            if(g > 255){g = 255;}
-            if(b > 255){b = 255;}
-
-
-          Color  color(r,g,b,255);
-
-          dotset->emplace_back(Point(v.x,v.y,v.z),color);
-        }
-    }
+  render(*this,&dotset,nullptr,lightset);
 }
 
 
@@ -271,6 +257,23 @@ produce_wire_dotset(DotSet&  dotset) const
   Line(Dot(c,white),Dot(a,white)).produce_dotset(dotset);
 }
 
+
+void
+Polygon::
+render_wire(Renderer&  renderer) const
+{
+  Line(Dot(a,white),Dot(b,white)).render(renderer);
+  Line(Dot(b,white),Dot(c,white)).render(renderer);
+  Line(Dot(c,white),Dot(a,white)).render(renderer);
+}
+
+
+void
+Polygon::
+render(Renderer&  renderer, const LightSet*  lightset) const
+{
+  render(*this,nullptr,&renderer,lightset);
+}
 
 
 

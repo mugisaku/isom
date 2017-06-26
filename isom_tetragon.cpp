@@ -22,8 +22,8 @@ void
 Tetragon::
 produce_vertex_string(VertexString&  s) const
 {
-  Polygon(id,a,b,c).produce_vertex_string(s);
-  Polygon(id,a,c,d).produce_vertex_string(s);
+  Polygon(id,a,b,c,texture_image).produce_vertex_string(s);
+  Polygon(id,a,c,d,texture_image).produce_vertex_string(s);
 }
 
 
@@ -31,19 +31,10 @@ produce_vertex_string(VertexString&  s) const
 
 void
 Tetragon::
-produce_dotset(DotSet&  dotset) const
+produce_dotset(DotSet&  dotset, const LightSet*  lightset) const
 {
-  Polygon(id,a,b,c).produce_dotset(dotset);
-  Polygon(id,a,c,d).produce_dotset(dotset);
-}
-
-
-void
-Tetragon::
-produce_dotset(const LightSet&  lightset, DotSet&  dotset) const
-{
-  Polygon(id,a,b,c).produce_dotset(lightset,dotset);
-  Polygon(id,a,c,d).produce_dotset(lightset,dotset);
+  Polygon(id,a,b,c,texture_image).produce_dotset(dotset,lightset);
+  Polygon(id,a,c,d,texture_image).produce_dotset(dotset,lightset);
 }
 
 
@@ -59,6 +50,14 @@ produce_wire_dotset(DotSet&  dotset) const
   Line(Dot(d,white),Dot(a,white)).produce_dotset(dotset);
 }
 
+
+void
+Tetragon::
+render(Renderer&  renderer, const LightSet*  lightset) const
+{
+  Polygon(id,a,b,c,texture_image).render(renderer,lightset);
+  Polygon(id,a,c,d,texture_image).render(renderer,lightset);
+}
 
 
 

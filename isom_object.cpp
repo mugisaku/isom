@@ -4,13 +4,7 @@
 
 
 
-Object::Object(                         ): id(0), kind(ObjectKind::null        ){}
-Object::Object(const Line&            ln): id(0), kind(ObjectKind::line        ){new(&data) Line(ln);}
-Object::Object(const Polygon&         po): id(0), kind(ObjectKind::polygon     ){new(&data) Polygon(po);}
-Object::Object(const Tetragon&        te): id(0), kind(ObjectKind::tetragon    ){new(&data) Tetragon(te);}
-Object::Object(const ObjectArray&  objar): id(0), kind(ObjectKind::object_array){new(&data) ObjectArray(objar);}
-Object::Object(const Object&   rhs) noexcept: id(0), kind(ObjectKind::null){*this = rhs;}
-Object::Object(      Object&&  rhs) noexcept: id(0), kind(ObjectKind::null){*this = std::move(rhs);}
+Object::Object(): id(0){}
 
 
 Object::
@@ -22,100 +16,58 @@ Object::
 
 
 
-Object&
-Object::
-operator=(const Object&   rhs) noexcept
-{
-  clear();
-
-  id   = rhs.id;
-  kind = rhs.kind;
-
-    switch(kind)
-    {
-  case(ObjectKind::null):
-      break;
-  case(ObjectKind::line):
-      new(&data) Line(rhs.data.line);
-      break;
-  case(ObjectKind::polygon):
-      new(&data) Polygon(rhs.data.polygon);
-      break;
-  case(ObjectKind::tetragon):
-      new(&data) Tetragon(rhs.data.tetragon);
-      break;
-  case(ObjectKind::object_array):
-      new(&data) ObjectArray(rhs.data.object_array);
-      break;
-  default:;
-    }
-
-
-  return *this;
-}
-
-
-Object&
-Object::
-operator=(Object&&  rhs) noexcept
-{
-  clear();
-
-  id = id;
-
-  std::swap(kind,rhs.kind);
-
-    switch(kind)
-    {
-  case(ObjectKind::null):
-      break;
-  case(ObjectKind::line):
-      new(&data) Line(std::move(rhs.data.line));
-      break;
-  case(ObjectKind::polygon):
-      new(&data) Polygon(std::move(rhs.data.polygon));
-      break;
-  case(ObjectKind::tetragon):
-      new(&data) Tetragon(std::move(rhs.data.tetragon));
-      break;
-  case(ObjectKind::object_array):
-      new(&data) ObjectArray(std::move(rhs.data.object_array));
-      break;
-  default:;
-    }
-
-
-  return *this;
-}
-
-
-
-
 void
 Object::
 clear()
 {
-    switch(kind)
-    {
-  case(ObjectKind::null):
-      break;
-  case(ObjectKind::line):
-      data.line.~Line();
-      break;
-  case(ObjectKind::polygon):
-      data.polygon.~Polygon();
-      break;
-  case(ObjectKind::tetragon):
-      data.tetragon.~Tetragon();
-      break;
-  case(ObjectKind::object_array):
-      data.object_array.~ObjectArray();
-      break;
-  default:;
-    }
+  id = 0;
+
+  lines.clear();
+  polygons.clear();
+  tetragons.clear();
+  children.clear();
+}
 
 
-  kind = ObjectKind::null;
+
+
+Line&
+Object::
+push(Line&&  ln)
+{
+  lines.emplace_back(std::move(ln));
+
+  return lines.back();
+}
+
+
+Polygon&
+Object::
+push(Polygon&&  po)
+{
+  polygons.emplace_back(std::move(po));
+
+  return polygons.back();
+}
+
+
+Tetragon&
+Object::
+push(Tetragon&&  te)
+{
+  tetragons.emplace_back(std::move(te));
+
+  return tetragons.back();
+}
+
+
+Object&
+Object::
+push(Object&&  ob)
+{
+  children.emplace_back(std::move(ob));
+
+  return children.back();
 }
 
 
@@ -125,75 +77,105 @@ void
 Object::
 transform(const Transformer&  tr)
 {
-    switch(kind)
+    for(auto&  line: lines)
     {
-  case(ObjectKind::null):
-      break;
-  case(ObjectKind::line):
-      data.line.transform(tr);
-      break;
-  case(ObjectKind::polygon):
-      data.polygon.transform(tr);
-      break;
-  case(ObjectKind::tetragon):
-      data.tetragon.transform(tr);
-      break;
-  case(ObjectKind::object_array):
-      transform(data.object_array,tr);
-      break;
-  default:;
+      line.transform(tr);
+    }
+
+
+    for(auto&  polygon: polygons)
+    {
+      polygon.transform(tr);
+    }
+
+
+    for(auto&  tetragon: tetragons)
+    {
+      tetragon.transform(tr);
+    }
+
+
+    for(auto&  child: children)
+    {
+      child.transform(tr);
     }
 }
 
 
 void
 Object::
-produce_dotset(DotSet&  set) const
+produce_dotset(DotSet&  set, const LightSet*  lightset) const
 {
-    switch(kind)
+    for(auto&  line: lines)
     {
-  case(ObjectKind::null):
-      break;
-  case(ObjectKind::line):
-      data.line.produce_dotset(set);
-      break;
-  case(ObjectKind::polygon):
-      data.polygon.produce_dotset(set);
-      break;
-  case(ObjectKind::tetragon):
-      data.tetragon.produce_dotset(set);
-      break;
-  case(ObjectKind::object_array):
-      produce_dotset(data.object_array,set);
-      break;
-  default:;
+      line.produce_dotset(set);
     }
-}
 
 
-
-
-void
-Object::
-transform(ObjectArray&  arr, const Transformer&  tr)
-{
-    for(auto&  obj: arr)
+    for(auto&  polygon: polygons)
     {
-      obj.transform(tr);
+      polygon.produce_dotset(set,lightset);
+    }
+
+
+    for(auto&  tetragon: tetragons)
+    {
+      tetragon.produce_dotset(set,lightset);
+    }
+
+
+    for(auto&  child: children)
+    {
+      child.produce_dotset(set,lightset);
     }
 }
 
 
 void
 Object::
-produce_dotset(const ObjectArray&  arr, DotSet&  set)
+render(Renderer&  renderer, std::initializer_list<const Transformer*>  trls, const LightSet*  lightset) const
 {
-    for(auto&  obj: arr)
+    for(auto  line: lines)
     {
-      obj.produce_dotset(set);
+        for(auto  tr: trls)
+        {
+          line.transform(*tr);
+        }
+
+
+      line.render(renderer);
+    }
+
+
+    for(auto  polygon: polygons)
+    {
+        for(auto  tr: trls)
+        {
+          polygon.transform(*tr);
+        }
+
+
+      polygon.render(renderer,lightset);
+    }
+
+
+    for(auto  tetragon: tetragons)
+    {
+        for(auto  tr: trls)
+        {
+          tetragon.transform(*tr);
+        }
+
+
+      tetragon.render(renderer,lightset);
+    }
+
+
+    for(auto&  child: children)
+    {
+      child.render(renderer,trls,lightset);
     }
 }
-
 
 
 

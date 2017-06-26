@@ -22,6 +22,8 @@ Line
 
   void  produce_dotset(DotSet&  set) const;
 
+  void  render(Renderer&  renderer) const;
+
 };
 
 

@@ -10,40 +10,9 @@
 #include"isom_line.hpp"
 #include"isom_polygon.hpp"
 #include"isom_tetragon.hpp"
+#include<initializer_list>
 
 
-
-
-enum class
-ObjectKind
-{
-  null,
-  line,
-  polygon,
-  tetragon,
-  object_array,
-
-};
-
-
-struct Object;
-
-using ObjectArray = std::vector<Object>;
-
-
-union
-ObjectData
-{
-  Line          line;
-  Polygon    polygon;
-  Tetragon  tetragon;
-
-  ObjectArray    object_array;
-
-   ObjectData(){}
-  ~ObjectData(){}
-
-};
 
 
 class
@@ -51,24 +20,18 @@ Object
 {
   uint32_t  id;
 
-  ObjectKind  kind;
-  ObjectData  data;
+  std::string  name;
+
+  std::vector<Line>          lines;
+  std::vector<Polygon>    polygons;
+  std::vector<Tetragon>  tetragons;
+
+  std::vector<Object>  children;
 
 public:
   Object();
-  Object(const Line&            ln);
-  Object(const Polygon&         po);
-  Object(const Tetragon&        te);
-  Object(const ObjectArray&  objar);
-  Object(const Object&   rhs) noexcept;
-  Object(      Object&&  rhs) noexcept;
  ~Object();
 
-
-  Object&  operator=(const Object&   rhs) noexcept;
-  Object&  operator=(      Object&&  rhs) noexcept;
-
-  ObjectData*  operator->(){return &data;}
 
   uint32_t  get_id() const{return id;}
 
@@ -76,14 +39,16 @@ public:
 
   void  clear();
 
+  Line&      push(Line&&      ln);
+  Polygon&   push(Polygon&&   po);
+  Tetragon&  push(Tetragon&&  te);
+  Object&    push(Object&&    ob);
+
   void  transform(const Transformer&  tr);
 
-  void  produce_dotset(DotSet&  set) const;
+  void  produce_dotset(DotSet&  set, const LightSet*  lightset=nullptr) const;
 
-
-  static void  transform(ObjectArray&  arr, const Transformer&  tr);
-
-  static void  produce_dotset(const ObjectArray&  arr, DotSet&  set);
+  void  render(Renderer&  renderer, std::initializer_list<const Transformer*>  trls, const LightSet*  lightset=nullptr) const;
 
 };
 

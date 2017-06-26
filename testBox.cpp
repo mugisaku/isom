@@ -135,13 +135,9 @@ main(int  argc, char**  argv)
   texture.set_colorkey(0,0,0);
 
 
-  obj = Object(ObjectArray());
-
-  Polygon  poly(0,Vertex(100, 0, 0),
-                  Vertex(180,80, 0),
-                  Vertex(100, 0,40));
-
-  obj->object_array.emplace_back(std::move(poly));
+  obj.push(Polygon(0,Vertex(100, 0, 0),
+                     Vertex(180,80, 0),
+                     Vertex(100, 0,40)));
   
 
   tr.change_center(0,0,0);

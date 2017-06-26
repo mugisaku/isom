@@ -112,6 +112,14 @@ const Color&
 Image::
 get_color(int  x, int  y) const
 {
+    if(!width || !height)
+    {
+      static Color  null;
+
+      return null;
+    }
+
+
   return table[(width*(y%height))+(x%width)];
 }
 
