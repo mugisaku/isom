@@ -8,8 +8,63 @@
 namespace{
 
 
+struct
+Constant
+{
+  std::string  name;
+
+  int  value;
+
+  Constant(const std::string&  name_, int  v):
+  name(name_), value(v){}
+
+};
+
+
+struct
+Scope
+{
+  const Scope*  const parent=nullptr;
+
+  std::vector<Constant>  table;
+
+  Scope(const Scope*  parent_=nullptr): parent(parent_){}
+
+  void  operator+=(const libjson::Value&  v)
+  {
+    using namespace libjson;
+
+      if(v == ValueKind::object)
+      {
+          for(auto&  m: v->object)
+          {
+              if(m.value == ValueKind::number)
+              {
+                table.emplace_back(m.name,m.value->number);
+              }
+          }
+      }
+  }
+
+  int  operator[](const std::string&  name) const
+  {
+      for(auto&  c: table)
+      {
+          if(c.name == name)
+          {
+            return c.value;
+          }
+      }
+
+
+    return parent? (*parent)[name]:0;
+  }
+
+};
+
+
 Vertex
-read_vertex(const libjson::Object&  o)
+read_vertex(const libjson::Object&  o, const Scope&  parent)
 {
   using namespace libjson;
 
@@ -17,9 +72,8 @@ read_vertex(const libjson::Object&  o)
 
     for(auto&  m: o)
     {
-      int*  ptr = nullptr;
-
-      int  n = m.value.to_number();
+      int  n = (m.value == ValueKind::number)? m.value->number:
+               (m.value == ValueKind::string)? parent[m.value->string]:0;
 
            if(m.name == "x"){v.x = n;}
       else if(m.name == "y"){v.y = n;}
@@ -37,7 +91,7 @@ read_vertex(const libjson::Object&  o)
 
 
 Line
-read_line(const libjson::Object&  o)
+read_line(const libjson::Object&  o, const Scope&  parent)
 {
   using namespace libjson;
 
@@ -47,8 +101,8 @@ read_line(const libjson::Object&  o)
     {
         if(m.value == ValueKind::object)
         {
-               if(m.name == "a"){vertexes[0] = read_vertex(m.value->object);}
-          else if(m.name == "b"){vertexes[1] = read_vertex(m.value->object);}
+               if(m.name == "a"){vertexes[0] = read_vertex(m.value->object,parent);}
+          else if(m.name == "b"){vertexes[1] = read_vertex(m.value->object,parent);}
         }
     }
 
@@ -62,7 +116,7 @@ read_line(const libjson::Object&  o)
 
 
 Polygon
-read_polygon(const libjson::Object&  o)
+read_polygon(const libjson::Object&  o, const Scope&  parent)
 {
   using namespace libjson;
 
@@ -72,9 +126,9 @@ read_polygon(const libjson::Object&  o)
     {
         if(m.value == ValueKind::object)
         {
-               if(m.name == "a"){vertexes[0] = read_vertex(m.value->object);}
-          else if(m.name == "b"){vertexes[1] = read_vertex(m.value->object);}
-          else if(m.name == "c"){vertexes[2] = read_vertex(m.value->object);}
+               if(m.name == "a"){vertexes[0] = read_vertex(m.value->object,parent);}
+          else if(m.name == "b"){vertexes[1] = read_vertex(m.value->object,parent);}
+          else if(m.name == "c"){vertexes[2] = read_vertex(m.value->object,parent);}
         }
     }
 
@@ -86,7 +140,7 @@ read_polygon(const libjson::Object&  o)
 
 
 Tetragon
-read_tetragon(const libjson::Object&  o)
+read_tetragon(const libjson::Object&  o, const Scope&  parent)
 {
   using namespace libjson;
 
@@ -96,10 +150,10 @@ read_tetragon(const libjson::Object&  o)
     {
         if(m.value == ValueKind::object)
         {
-               if(m.name == "a"){vertexes[0] = read_vertex(m.value->object);}
-          else if(m.name == "b"){vertexes[1] = read_vertex(m.value->object);}
-          else if(m.name == "c"){vertexes[2] = read_vertex(m.value->object);}
-          else if(m.name == "d"){vertexes[3] = read_vertex(m.value->object);}
+               if(m.name == "a"){vertexes[0] = read_vertex(m.value->object,parent);}
+          else if(m.name == "b"){vertexes[1] = read_vertex(m.value->object,parent);}
+          else if(m.name == "c"){vertexes[2] = read_vertex(m.value->object,parent);}
+          else if(m.name == "d"){vertexes[3] = read_vertex(m.value->object,parent);}
         }
     }
 
@@ -112,14 +166,18 @@ read_tetragon(const libjson::Object&  o)
 
 
 Object
-read_root(const libjson::Array&  arr)
+read_root(const libjson::Array&  arr, const Scope&  parent)
 {
+  Scope  scope(&parent);
+
   Object  root;
 
   using namespace libjson;
 
     for(auto&  e: arr)
     {
+      scope += e;
+
         if(e == ValueKind::array)
         {
           auto&  a = e->array;
@@ -131,9 +189,9 @@ read_root(const libjson::Array&  arr)
               auto&  type = a[0]->string;
               auto&  data = a[1]->object;
 
-                   if(type == "line"    ){root.push(read_line(    data));}
-              else if(type == "polygon" ){root.push(read_polygon( data));}
-              else if(type == "tetragon"){root.push(read_tetragon(data));}
+                   if(type == "line"    ){root.push(read_line(    data,scope));}
+              else if(type == "polygon" ){root.push(read_polygon( data,scope));}
+              else if(type == "tetragon"){root.push(read_tetragon(data,scope));}
             }
         }
     }
@@ -149,6 +207,8 @@ read_root(const libjson::Array&  arr)
 Object
 load_object(const std::string&  s)
 {
+  Scope  scope;
+
   Object  container;
 
   using namespace libjson;
@@ -161,6 +221,8 @@ load_object(const std::string&  s)
     {
         for(auto&  e: v->array)
         {
+          scope += e;
+
             if(e == ValueKind::array)
             {
               auto&  a = e->array;
@@ -172,7 +234,7 @@ load_object(const std::string&  s)
                   auto&  name = a[0]->string;
                   auto&  data = a[1]->array ;
 
-                  auto  o = read_root(data);
+                  auto  o = read_root(data,scope);
 
                   o.change_name(name.data());
 

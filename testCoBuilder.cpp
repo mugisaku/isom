@@ -109,7 +109,7 @@ process_keydown(int  k)
   else
     if(k == SDLK_SPACE)
     {
-      FileBuffer  fbuf(FilePath("../object.txt"));
+      FileBuffer  fbuf(FilePath("../object.json"));
 
       Object  o;
 
@@ -199,7 +199,7 @@ main_loop()
 
       auto  a = object_tr.get_angle();
 
-      a.y -= 5;
+      a.y -= 15;
 
       object_tr.change_angle(a);
 
