@@ -104,36 +104,7 @@ transform(const Transformer&  tr)
 
 void
 Object::
-produce_dotset(DotSet&  set, const LightSet*  lightset) const
-{
-    for(auto&  line: lines)
-    {
-      line.produce_dotset(set);
-    }
-
-
-    for(auto&  polygon: polygons)
-    {
-      polygon.produce_dotset(set,lightset);
-    }
-
-
-    for(auto&  tetragon: tetragons)
-    {
-      tetragon.produce_dotset(set,lightset);
-    }
-
-
-    for(auto&  child: children)
-    {
-      child.produce_dotset(set,lightset);
-    }
-}
-
-
-void
-Object::
-render(Renderer&  renderer, std::initializer_list<const Transformer*>  trls, const LightSet*  lightset) const
+render(Renderer&  renderer, std::initializer_list<const Transformer*>  trls) const
 {
     for(auto  line: lines)
     {
@@ -155,7 +126,7 @@ render(Renderer&  renderer, std::initializer_list<const Transformer*>  trls, con
         }
 
 
-      polygon.render(renderer,lightset);
+      polygon.render(renderer);
     }
 
 
@@ -167,13 +138,13 @@ render(Renderer&  renderer, std::initializer_list<const Transformer*>  trls, con
         }
 
 
-      tetragon.render(renderer,lightset);
+      tetragon.render(renderer);
     }
 
 
     for(auto&  child: children)
     {
-      child.render(renderer,trls,lightset);
+      child.render(renderer,trls);
     }
 }
 

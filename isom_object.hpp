@@ -37,6 +37,10 @@ public:
 
   void  change_id(uint32_t  id_){id = id_;}
 
+  void  change_name(const char*  new_name){name = new_name;}
+
+  const std::string&  get_name() const{return name;}
+
   void  clear();
 
   Line&      push(Line&&      ln);
@@ -44,11 +48,11 @@ public:
   Tetragon&  push(Tetragon&&  te);
   Object&    push(Object&&    ob);
 
+  const std::vector<Object>&  get_children() const{return children;}
+
   void  transform(const Transformer&  tr);
 
-  void  produce_dotset(DotSet&  set, const LightSet*  lightset=nullptr) const;
-
-  void  render(Renderer&  renderer, std::initializer_list<const Transformer*>  trls, const LightSet*  lightset=nullptr) const;
+  void  render(Renderer&  renderer, std::initializer_list<const Transformer*>  trls) const;
 
 };
 

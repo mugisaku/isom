@@ -1,6 +1,5 @@
 #include<SDL.h>
 #include<list>
-#include"isom_DotSet.hpp"
 #include"isom_LineContext.hpp"
 #include"isom_screen.hpp"
 #include"isom_image.hpp"
@@ -9,6 +8,7 @@
 #include"isom_renderer.hpp"
 #include"isom_load.hpp"
 #include"libjson/json_FileBuffer.hpp"
+#include"libjson/json_stream.hpp"
 
 
 #ifdef EMSCRIPTEN
@@ -28,14 +28,14 @@ Image  texture;
 
 
 Object  standard;
+Object   objects;
 
+int  target_index;
+
+std::vector<Object>::const_iterator  target;
 
 Transformer    view_tr;
 Transformer  object_tr;
-
-
-Object
-objects;
 
 
 void
@@ -43,8 +43,16 @@ render_main()
 {
   main_renderer.clear();
 
-  standard.render(main_renderer,{&object_tr,&view_tr},&Renderer::default_lightset);
-   objects.render(main_renderer,{&object_tr,&view_tr},&Renderer::default_lightset);
+  standard.render(main_renderer,{&object_tr,&view_tr});
+
+    if(target != objects.get_children().cend())
+    {
+      Formatted  fmt;
+
+      main_renderer.draw_string(fmt("%2d %s",target_index,target->get_name().data()),white,0,0);
+
+      target->render(main_renderer,{&object_tr,&view_tr});
+    }
 }
 
 
@@ -66,6 +74,87 @@ render()
 
 
       needed_to_redraw = false;
+    }
+}
+
+
+void
+process_keydown(int  k)
+{
+    if(k == SDLK_LEFT)
+    {
+        if(target_index)
+        {
+          --target      ;
+          --target_index;
+
+          needed_to_redraw = true;
+        }
+    }
+
+  else
+    if(k == SDLK_RIGHT)
+    {
+      int  n = objects.get_children().size();
+
+        if(target_index < (n-1))
+        {
+          ++target      ;
+          ++target_index;
+
+          needed_to_redraw = true;
+        }
+    }
+
+  else
+    if(k == SDLK_SPACE)
+    {
+      FileBuffer  fbuf(FilePath("../object.txt"));
+
+      Object  o;
+
+        try
+        {
+          o = load_object(fbuf.get_content().data());
+        }
+
+
+        catch(libjson::Stream&  s)
+        {
+          s.print();
+
+          return;
+        }
+
+
+      objects = std::move(o);
+
+      auto&  arr = objects.get_children();
+
+      target = arr.cbegin();
+
+        if(target_index < arr.size())
+        {
+            for(int  i = 0;  i < target_index;  ++i)
+            {
+              ++target;
+            }
+        }
+
+      else
+        {
+          target_index = 0;
+        }
+
+
+      auto  a = object_tr.get_angle();
+
+      a.y = 0;
+
+      object_tr.change_angle(a);
+
+
+      needed_to_redraw = true;
     }
 }
 
@@ -94,21 +183,7 @@ main_loop()
           break;
 #endif
       case(SDL_KEYDOWN):
-            if(evt.key.keysym.sym == SDLK_SPACE)
-            {
-              FileBuffer  fbuf(FilePath("../object.txt"));
-
-              load_object(fbuf.get_content().data(),objects);
-
-              auto  a = object_tr.get_angle();
-
-              a.y = 0;
-
-              object_tr.change_angle(a);
-
-
-              needed_to_redraw = true;
-            }
+          process_keydown(evt.key.keysym.sym);
           break;
         }
     }
@@ -171,6 +246,8 @@ main(int  argc, char**  argv)
   screen::open();
 
   texture.open("texture.png");
+
+  Polygon::texture_image = &texture;
 
   Renderer::default_lightset.directional.vector = Vector(-1,0,-1);
   Renderer::default_lightset.directional.color  = Color(0x7F,0x7F,0x7F,0xFF);

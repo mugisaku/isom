@@ -36,8 +36,8 @@ read_vertex(const libjson::Object&  o)
 }
 
 
-void
-read_line(const libjson::Object&  o, Object&  obj)
+Line
+read_line(const libjson::Object&  o)
 {
   using namespace libjson;
 
@@ -56,13 +56,13 @@ read_line(const libjson::Object&  o, Object&  obj)
   auto&  a = vertexes[0];
   auto&  b = vertexes[1];
 
-  obj.push(Line(Dot(a,Color(a.r,a.g,a.b,255)),
-                Dot(b,Color(b.r,b.g,b.b,255))));
+  return Line(Dot(a,Color(a.r,a.g,a.b,255)),
+              Dot(b,Color(b.r,b.g,b.b,255)));
 }
 
 
-void
-read_polygon(const libjson::Object&  o, Object&  obj)
+Polygon
+read_polygon(const libjson::Object&  o)
 {
   using namespace libjson;
 
@@ -79,14 +79,14 @@ read_polygon(const libjson::Object&  o, Object&  obj)
     }
 
 
-  obj.push(Polygon(0,vertexes[0],
-                     vertexes[1],
-                     vertexes[2]));
+  return Polygon(0,vertexes[0],
+                   vertexes[1],
+                   vertexes[2]);
 }
 
 
-void
-read_tetragon(const libjson::Object&  o, Object&  obj)
+Tetragon
+read_tetragon(const libjson::Object&  o)
 {
   using namespace libjson;
 
@@ -104,63 +104,86 @@ read_tetragon(const libjson::Object&  o, Object&  obj)
     }
 
 
-  obj.push(Tetragon(0,vertexes[0],
-                      vertexes[1],
-                      vertexes[2],
-                      vertexes[3]));
+  return Tetragon(0,vertexes[0],
+                    vertexes[1],
+                    vertexes[2],
+                    vertexes[3]);
 }
 
 
-}
-
-
-void
-load_object(const std::string&  s, Object&  obj)
+Object
+read_root(const libjson::Array&  arr)
 {
-  Object  new_obj;
+  Object  root;
 
   using namespace libjson;
 
-    try
+    for(auto&  e: arr)
     {
-      FileBuffer  fbuf(std::string(s.data()));
-
-      Value  v(fbuf);
-
-        if(v == ValueKind::array)
+        if(e == ValueKind::array)
         {
-            for(auto&  e: v->array)
+          auto&  a = e->array;
+
+            if((a.size() >= 2) &&
+               (a[0] == ValueKind::string) &&
+               (a[1] == ValueKind::object))
             {
-                if(e == ValueKind::array)
+              auto&  type = a[0]->string;
+              auto&  data = a[1]->object;
+
+                   if(type == "line"    ){root.push(read_line(    data));}
+              else if(type == "polygon" ){root.push(read_polygon( data));}
+              else if(type == "tetragon"){root.push(read_tetragon(data));}
+            }
+        }
+    }
+
+
+  return std::move(root);
+}
+
+
+}
+
+
+Object
+load_object(const std::string&  s)
+{
+  Object  container;
+
+  using namespace libjson;
+
+  FileBuffer  fbuf(std::string(s.data()));
+
+  Value  v(fbuf);
+
+    if(v == ValueKind::array)
+    {
+        for(auto&  e: v->array)
+        {
+            if(e == ValueKind::array)
+            {
+              auto&  a = e->array;
+
+                if((a.size() >= 2) &&
+                   (a[0] == ValueKind::string) &&
+                   (a[1] == ValueKind::array ))
                 {
-                  auto&  a = e->array;
+                  auto&  name = a[0]->string;
+                  auto&  data = a[1]->array ;
 
-                    if((a.size() >= 2) &&
-                       (a[0] == ValueKind::string) &&
-                       (a[1] == ValueKind::object))
-                    {
-                      auto&  type = a[0]->string;
-                      auto&  data = a[1]->object;
+                  auto  o = read_root(data);
 
-                           if(type == "line"    ){read_line(    data,new_obj);}
-                      else if(type == "polygon" ){read_polygon( data,new_obj);}
-                      else if(type == "tetragon"){read_tetragon(data,new_obj);}
-                    }
+                  o.change_name(name.data());
+
+                  container.push(std::move(o));
                 }
             }
         }
     }
 
 
-    catch(Stream&  s)
-    {
-      s.print();
-
-      return;
-    }
-
-
-  obj = std::move(new_obj);
+  return std::move(container);
 }
 
 

@@ -1,6 +1,5 @@
 #include<SDL.h>
 #include<list>
-#include"isom_DotSet.hpp"
 #include"isom_LineContext.hpp"
 #include"isom_screen.hpp"
 #include"isom_image.hpp"

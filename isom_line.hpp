@@ -3,7 +3,6 @@
 
 
 #include"isom_dot.hpp"
-#include"isom_DotSet.hpp"
 
 
 
@@ -19,8 +18,6 @@ Line
 
 
   void  transform(const Transformer&  tr);
-
-  void  produce_dotset(DotSet&  set) const;
 
   void  render(Renderer&  renderer) const;
 

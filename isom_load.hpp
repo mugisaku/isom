@@ -6,7 +6,7 @@
 #include<string>
 
 
-void  load_object(const std::string&  s, Object&  obj);
+Object  load_object(const std::string&  s);
 
 
 #endif

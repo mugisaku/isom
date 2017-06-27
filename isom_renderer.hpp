@@ -15,7 +15,7 @@
 
 
 
-struct Plane;
+struct Dot;
 
 
 struct
@@ -43,14 +43,19 @@ Renderer
   int     top;
   int  bottom;
 
+  std::vector<Dot>  dot_buffer;
+
+  bool  buffering;
+
 public:
   static LightSet  default_lightset;
 
   const LightSet*  lightset;
 
-  Renderer(int  x=0, int  y=0, int  w=0, int  h=0, const LightSet*  ls=&default_lightset);
+  Renderer(int  x=0, int  y=0, int  w=0, int  h=0, const LightSet*  ls=&default_lightset, bool  buffering_=false);
 
   void  clear();
+  void  flush();
 
   int  get_x_base() const{return x_base;}
   int  get_y_base() const{return y_base;}

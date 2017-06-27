@@ -1,4 +1,5 @@
 #include"isom_renderer.hpp"
+#include"isom_dot.hpp"
 
 
 
@@ -11,10 +12,11 @@ default_lightset;
 
 
 Renderer::
-Renderer(int  x, int  y, int  w, int  h, const LightSet*  ls):
+Renderer(int  x, int  y, int  w, int  h, const LightSet*  ls, bool  buffering_):
 x_width(w),
 y_width(h),
-lightset(ls)
+lightset(ls),
+buffering(buffering_)
 {
   table.resize(x_width*y_width);
 
@@ -65,6 +67,9 @@ clear()
 
       ++it;
     }
+
+
+  dot_buffer.clear();
 }
 
 
@@ -159,6 +164,21 @@ put(const Color&  color, int  x, int  y, int  z, uint32_t  id_)
             }
         }
     }
+}
+
+
+
+void
+Renderer::
+flush()
+{
+    for(auto&  dot: dot_buffer)
+    {
+      put(dot.color,dot.x,dot.y,dot.z);
+    }
+
+
+  dot_buffer.clear();
 }
 
 
