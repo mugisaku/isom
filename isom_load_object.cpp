@@ -1,6 +1,5 @@
 #include"isom_load.hpp"
-#include"libjson/json_stream.hpp"
-#include"libjson/json_FileBuffer.hpp"
+#include"isom_scope.hpp"
 
 
 
@@ -8,59 +7,6 @@
 namespace{
 
 
-struct
-Constant
-{
-  std::string  name;
-
-  int  value;
-
-  Constant(const std::string&  name_, int  v):
-  name(name_), value(v){}
-
-};
-
-
-struct
-Scope
-{
-  const Scope*  const parent=nullptr;
-
-  std::vector<Constant>  table;
-
-  Scope(const Scope*  parent_=nullptr): parent(parent_){}
-
-  void  operator+=(const libjson::Value&  v)
-  {
-    using namespace libjson;
-
-      if(v == ValueKind::object)
-      {
-          for(auto&  m: v->object)
-          {
-              if(m.value == ValueKind::number)
-              {
-                table.emplace_back(m.name,m.value->number);
-              }
-          }
-      }
-  }
-
-  int  operator[](const std::string&  name) const
-  {
-      for(auto&  c: table)
-      {
-          if(c.name == name)
-          {
-            return c.value;
-          }
-      }
-
-
-    return parent? (*parent)[name]:0;
-  }
-
-};
 
 
 Vertex
@@ -166,38 +112,69 @@ read_tetragon(const libjson::Object&  o, const Scope&  parent)
 
 
 Object
-read_root(const libjson::Array&  arr, const Scope&  parent)
+read_element(const libjson::Object&  jso, const Scope&  parent)
 {
   Scope  scope(&parent);
 
-  Object  root;
+  Object  o;
 
   using namespace libjson;
 
-    for(auto&  e: arr)
+    for(auto&  m: jso)
     {
-      scope += e;
-
-        if(e == ValueKind::array)
+        if(m.name == "constants")
         {
-          auto&  a = e->array;
+          scope += m.value;
+        }
 
-            if((a.size() >= 2) &&
-               (a[0] == ValueKind::string) &&
-               (a[1] == ValueKind::object))
+      else if(m.name == "line"    ){o.push(read_line(    m.value->object,scope));}
+      else if(m.name == "polygon" ){o.push(read_polygon( m.value->object,scope));}
+      else if(m.name == "tetragon"){o.push(read_tetragon(m.value->object,scope));}
+    }
+
+
+  return std::move(o);
+}
+
+
+
+
+Object
+read_object(const libjson::ObjectMember&  m, const Scope&  parent)
+{
+  Scope  scope(&parent);
+
+  Object  o;
+
+  o.change_name(m.name.data());
+
+  using namespace libjson;
+
+    if(m.value == ValueKind::object)
+    {
+        for(auto&  mm: m.value->object)
+        {
+            if(mm.name == "constants")
             {
-              auto&  type = a[0]->string;
-              auto&  data = a[1]->object;
+              scope += mm.value;
+            }
 
-                   if(type == "line"    ){root.push(read_line(    data,scope));}
-              else if(type == "polygon" ){root.push(read_polygon( data,scope));}
-              else if(type == "tetragon"){root.push(read_tetragon(data,scope));}
+          else
+            if((mm.name == "elements") && (mm.value == ValueKind::object))
+            {
+                for(auto&  mmm: mm.value->object)
+                {
+                    if(mmm.value == ValueKind::object)
+                    {
+                      o.push(read_element(mmm.value->object,scope));
+                    }
+                }
             }
         }
     }
 
 
-  return std::move(root);
+  return std::move(o);
 }
 
 
@@ -217,28 +194,21 @@ load_object(const std::string&  s)
 
   Value  v(fbuf);
 
-    if(v == ValueKind::array)
+    if(v == ValueKind::object)
     {
-        for(auto&  e: v->array)
+        for(auto&  m: v->object)
         {
-          scope += e;
-
-            if(e == ValueKind::array)
+            if(m.name == "constants")
             {
-              auto&  a = e->array;
+              scope += m.value;
+            }
 
-                if((a.size() >= 2) &&
-                   (a[0] == ValueKind::string) &&
-                   (a[1] == ValueKind::array ))
+          else
+            if((m.name == "objects") && (m.value == ValueKind::object))
+            {
+                for(auto&  mm: m.value->object)
                 {
-                  auto&  name = a[0]->string;
-                  auto&  data = a[1]->array ;
-
-                  auto  o = read_root(data,scope);
-
-                  o.change_name(name.data());
-
-                  container.push(std::move(o));
+                  container.push(read_object(mm,scope));
                 }
             }
         }

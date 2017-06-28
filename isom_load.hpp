@@ -7,6 +7,7 @@
 
 
 Object  load_object(const std::string&  s);
+Object   load_stage(const Object&  objects, const std::string&  s);
 
 
 #endif

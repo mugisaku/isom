@@ -64,14 +64,16 @@ set(SOURCES
   isom_font.cpp
   isom_image.cpp
   isom_screen.cpp
-  isom_load.cpp
+  isom_scope.cpp
+  isom_load_object.cpp
+  isom_load_stage.cpp
 )
 
 
 include_directories(.)
 include_directories(/usr/include/SDL2)
 add_executable("testLineContext${EXTENSION}" testLineContext.cpp ${SOURCES})
-add_executable("testBuilding${EXTENSION}" testBuilding.cpp ${SOURCES})
+add_executable("testBuilder${EXTENSION}" testBuilder.cpp ${SOURCES})
 add_executable("testCoBuilder${EXTENSION}" testCoBuilder.cpp ${SOURCES})
 
 

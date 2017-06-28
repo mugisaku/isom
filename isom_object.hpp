@@ -50,6 +50,8 @@ public:
 
   const std::vector<Object>&  get_children() const{return children;}
 
+  const Object*  find_child_by_name(const std::string&  name_) const;
+
   void  transform(const Transformer&  tr);
 
   void  render(Renderer&  renderer, std::initializer_list<const Transformer*>  trls) const;

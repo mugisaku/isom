@@ -73,6 +73,31 @@ push(Object&&  ob)
 
 
 
+const Object*
+Object::
+find_child_by_name(const std::string&  name_) const
+{
+    for(auto&  child: children)
+    {
+        if(child.name == name_)
+        {
+          return &child;
+        }
+
+
+      auto  result = child.find_child_by_name(name_);
+
+        if(result)
+        {
+          return result;
+        }
+    }
+
+
+  return nullptr;
+}
+
+
 void
 Object::
 transform(const Transformer&  tr)
