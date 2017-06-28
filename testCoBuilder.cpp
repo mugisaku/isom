@@ -49,7 +49,7 @@ render_main()
     {
       Formatted  fmt;
 
-      main_renderer.draw_string(fmt("%2d %s",target_index,target->get_name().data()),white,0,0);
+      main_renderer.draw_ascii(fmt("%2d %s",target_index,target->get_name().data()),white,0,0);
 
       target->render(main_renderer,{&object_tr,&view_tr});
     }
@@ -75,6 +75,56 @@ render()
 
       needed_to_redraw = false;
     }
+}
+
+
+void
+load(const std::string&  s)
+{
+  Object  o;
+
+    try
+    {
+      o = load_object(s);
+    }
+
+
+    catch(libjson::Stream&  st)
+    {
+      st.print();
+
+      return;
+    }
+
+
+  objects = std::move(o);
+
+  auto&  arr = objects.get_children();
+
+  target = arr.cbegin();
+
+    if(target_index < arr.size())
+    {
+        for(int  i = 0;  i < target_index;  ++i)
+        {
+          ++target;
+        }
+    }
+
+  else
+    {
+      target_index = 0;
+    }
+
+
+  auto  a = object_tr.get_angle();
+
+  a.y = 0;
+
+  object_tr.change_angle(a);
+
+
+  needed_to_redraw = true;
 }
 
 
@@ -106,56 +156,15 @@ process_keydown(int  k)
         }
     }
 
+#ifndef EMSCRIPTEN
   else
     if(k == SDLK_SPACE)
     {
       FileBuffer  fbuf(FilePath("../object.json"));
 
-      Object  o;
-
-        try
-        {
-          o = load_object(fbuf.get_content().data());
-        }
-
-
-        catch(libjson::Stream&  s)
-        {
-          s.print();
-
-          return;
-        }
-
-
-      objects = std::move(o);
-
-      auto&  arr = objects.get_children();
-
-      target = arr.cbegin();
-
-        if(target_index < arr.size())
-        {
-            for(int  i = 0;  i < target_index;  ++i)
-            {
-              ++target;
-            }
-        }
-
-      else
-        {
-          target_index = 0;
-        }
-
-
-      auto  a = object_tr.get_angle();
-
-      a.y = 0;
-
-      object_tr.change_angle(a);
-
-
-      needed_to_redraw = true;
+      load(fbuf.get_content());
     }
+#endif
 }
 
 
@@ -233,11 +242,20 @@ make_standard()
 }
 
 
-
-
 }
 
 
+#ifdef EMSCRIPTEN
+extern "C"
+void
+EMSCRIPTEN_KEEPALIVE
+react_c(const char*  str)
+{
+  std::string  s(str);
+
+  load(s);
+}
+#endif
 
 
 int

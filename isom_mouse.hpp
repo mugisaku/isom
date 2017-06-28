@@ -7,13 +7,13 @@
 struct
 Mouse
 {
-  int  x;
-  int  y;
+  int  x=0;
+  int  y=0;
 
-  int   left;
-  int  right;
+  int   left=0;
+  int  right=0;
 
-  int  modified;
+  int  modified=0;
 
 };
 

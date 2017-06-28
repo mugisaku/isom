@@ -7,6 +7,7 @@
 #include"isom_object.hpp"
 #include"isom_renderer.hpp"
 #include"isom_load.hpp"
+#include"isom_mouse.hpp"
 #include"libjson/json_FileBuffer.hpp"
 #include"libjson/json_stream.hpp"
 
@@ -37,6 +38,8 @@ std::vector<Object>::const_iterator  target;
 Transformer   view_tr;
 Transformer  stage_tr;
 
+Mouse  mouse;
+
 
 void
 render_main()
@@ -49,7 +52,7 @@ render_main()
     {
       Formatted  fmt;
 
-      main_renderer.draw_string(fmt("%2d %s",target_index,target->get_name().data()),white,0,0);
+      main_renderer.draw_ascii(fmt("%2d %s",target_index,target->get_name().data()),white,0,0);
 
       target->render(main_renderer,{&stage_tr,&view_tr});
     }
@@ -75,6 +78,50 @@ render()
 
       needed_to_redraw = false;
     }
+}
+
+
+void
+load(const std::string&  obj_s, const std::string&  stg_s)
+{
+  Object  o;
+
+    try
+    {
+      auto  object_o = load_object(         obj_s);
+                   o =  load_stage(object_o,stg_s);
+    }
+
+
+    catch(libjson::Stream&  s)
+    {
+      s.print();
+
+      return;
+    }
+
+
+  stages = std::move(o);
+
+  auto&  arr = stages.get_children();
+
+  target = arr.cbegin();
+
+    if(target_index < arr.size())
+    {
+        for(int  i = 0;  i < target_index;  ++i)
+        {
+          ++target;
+        }
+    }
+
+  else
+    {
+      target_index = 0;
+    }
+
+
+  needed_to_redraw = true;
 }
 
 
@@ -106,51 +153,16 @@ process_keydown(int  k)
         }
     }
 
+#ifndef EMSCRIPTEN
   else
     if(k == SDLK_SPACE)
     {
       FileBuffer  object_fbuf(FilePath("../object.json"));
       FileBuffer   stage_fbuf(FilePath("../stage.json"));
 
-      Object  o;
-
-        try
-        {
-          auto  object_o = load_object(         object_fbuf.get_content().data());
-                       o =  load_stage(object_o, stage_fbuf.get_content().data());
-        }
-
-
-        catch(libjson::Stream&  s)
-        {
-          s.print();
-
-          return;
-        }
-
-
-      stages = std::move(o);
-
-      auto&  arr = stages.get_children();
-
-      target = arr.cbegin();
-
-        if(target_index < arr.size())
-        {
-            for(int  i = 0;  i < target_index;  ++i)
-            {
-              ++target;
-            }
-        }
-
-      else
-        {
-          target_index = 0;
-        }
-
-
-      needed_to_redraw = true;
+      load(object_fbuf.get_content(),stage_fbuf.get_content());
     }
+#endif
 }
 
 
@@ -180,7 +192,62 @@ main_loop()
       case(SDL_KEYDOWN):
           process_keydown(evt.key.keysym.sym);
           break;
+      case(SDL_MOUSEBUTTONDOWN):
+          mouse.x = evt.button.x;
+          mouse.y = evt.button.y;
+
+               if(evt.button.button == SDL_BUTTON_LEFT ){mouse.left  = 1;}
+          else if(evt.button.button == SDL_BUTTON_RIGHT){mouse.right = 1;}
+
+          mouse.modified = 1;
+          break;
+      case(SDL_MOUSEBUTTONUP):
+          mouse.x = evt.button.x;
+          mouse.y = evt.button.y;
+
+               if(evt.button.button == SDL_BUTTON_LEFT ){mouse.left  = 0;}
+          else if(evt.button.button == SDL_BUTTON_RIGHT){mouse.right = 0;}
+
+          mouse.modified = 1;
+          break;
+      case(SDL_MOUSEMOTION):
+          mouse.x = evt.button.x;
+          mouse.y = evt.button.y;
+
+          mouse.left  = evt.motion.state&SDL_BUTTON_LMASK;
+          mouse.right = evt.motion.state&SDL_BUTTON_RMASK;
+
+          mouse.modified = 1;
+          break;
         }
+    }
+
+
+    if(mouse.modified)
+    {
+      static int  x_prev;
+      static int  y_prev;
+
+        if((mouse.x != x_prev) ||
+           (mouse.y != y_prev))
+        {
+            if(mouse.left)
+            {
+              int  x = main_renderer.get_x_base()+(x_prev-mouse.x);
+              int  y = main_renderer.get_y_base()-(y_prev-mouse.y);
+
+              main_renderer.change_base_point(x,y);
+
+              needed_to_redraw = true;
+            }
+
+
+          x_prev = mouse.x;
+          y_prev = mouse.y;
+        }
+
+
+      mouse.modified = 0;
     }
 
 
@@ -210,9 +277,19 @@ make_standard()
 }
 
 
+}
 
+
+#ifdef EMSCRIPTEN
+extern "C"
+void
+EMSCRIPTEN_KEEPALIVE
+react_c(const char*  str)
+{
+  std::string  s(str);
 
 }
+#endif
 
 
 

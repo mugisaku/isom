@@ -39,7 +39,7 @@ if(EM)
   set(CMAKE_CXX_COMPILER  em++)
   set(CMAKE_CXX_FLAGS "-std=c++14 -Werror -Wno-switch -O2")
   set(CMAKE_CXX_FLAGS_DEBUG "")
-  set(CMAKE_CXX_LINK_FLAGS  "${CMAKE_CXX_LINK_FLAGS} -s USE_SDL=2 -s USE_SDL_IMAGE=2 --preload-file expandmetal.png --preload-file lena_std.png --use-preload-plugins")
+  set(CMAKE_CXX_LINK_FLAGS  "${CMAKE_CXX_LINK_FLAGS} -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s ALLOW_MEMORY_GROWTH=1 -s EXPORT_ALL=1 -s DISABLE_EXCEPTION_CATCHING=0 --preload-file texture.png --use-preload-plugins")
 endif()
 
 
@@ -78,8 +78,8 @@ add_executable("testCoBuilder${EXTENSION}" testCoBuilder.cpp ${SOURCES})
 
 
 if(EM)
-  set_target_properties("testTextureRenderingContext${EXTENSION}" PROPERTIES LINK_FLAGS "--shell-file ../shell__tTRC.html")
-  set_target_properties("testBox${EXTENSION}" PROPERTIES LINK_FLAGS "--shell-file ../shell__tB.html")
+  set_target_properties("testBuilder${EXTENSION}" PROPERTIES LINK_FLAGS "--shell-file ../shell__tB.html")
+  set_target_properties("testCoBuilder${EXTENSION}" PROPERTIES LINK_FLAGS "--shell-file ../shell__tCB.html")
   set_target_properties("testLineContext${EXTENSION}" PROPERTIES LINK_FLAGS "--shell-file ../shell__tLC.html")
 endif()
 
