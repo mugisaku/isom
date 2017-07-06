@@ -24,7 +24,7 @@ scan_number()
 
     if(!res)
     {
-      push_message("Numberの読み込みに失敗");
+      printf("Numberの読み込みに失敗\n");
 
       throw *this;
     }
@@ -55,6 +55,10 @@ scan_identifier(const char*  s)
     }
 
 
+  printf("識別子\"%s\"の読み込みに失敗\n",s);
+
+  throw *this;
+
   return false;
 }
 
@@ -65,7 +69,7 @@ scan_objectmember()
 {
     if(*current_pointer != '\"')
     {
-      push_message("オブジェクトメンバーの名前の読み込みに失敗");
+      printf("オブジェクトメンバーの名前の読み込みに失敗\n");
 
       throw *this;
     }
@@ -80,7 +84,7 @@ scan_objectmember()
 
     if(*current_pointer != ':')
     {
-      push_message("オブジェクトメンバーの値の読み込みに失敗");
+      printf("オブジェクトメンバー\"%s\"の値の読み込みに失敗\n",m.name.data());
 
       throw *this;
     }
@@ -114,6 +118,8 @@ scan_object()
 
       obj.emplace_back(scan_objectmember());
 
+      skip_spaces();
+
         if(*current_pointer == ',')
         {
           current_pointer += 1;
@@ -137,7 +143,7 @@ scan_hexadecimal_digit()
 
     if(!isxdigit(c))
     {
-      push_message("16進数ではない文字の出現");
+      printf("16進数ではない文字の出現\n");
 
       throw *this;
     }
@@ -193,9 +199,9 @@ scan_4hexadecimal_digits()
     }
 
 
-    catch(Stream&  s)
+    catch(Stream&  str)
     {
-      push_message("ユニバーサル文字の読み込みに失敗");
+      printf("ユニバーサル文字の読み込みに失敗\n");
 
       throw *this;
     }
@@ -242,7 +248,7 @@ scan_string()
               s.push_back(scan_4hexadecimal_digits());
               break;
           default:;
-              push_message("Stringの読み込み中、無効なエスケープ文字が出現");
+              printf("Stringの読み込み中、無効なエスケープ文字が出現\n");
 
               throw *this;
             }
@@ -254,7 +260,7 @@ scan_string()
       else
         if(iscntrl(c))
         {
-          push_message("Stringの読み込み中、制御文字が出現");
+          printf("Stringの読み込み中、制御文字が出現\n");
 
           throw *this;
         }
@@ -293,6 +299,8 @@ scan_array()
         
 
       arr.emplace_back(get_value());
+
+      skip_spaces();
 
         if(*current_pointer == ',')
         {

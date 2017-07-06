@@ -1,5 +1,8 @@
 #include"isom_load.hpp"
-#include"isom_scope.hpp"
+#include"libjson/json.hpp"
+#include"expree_parser.hpp"
+#include"expree_scope.hpp"
+#include"expree_MemorySpace.hpp"
 
 
 
@@ -10,7 +13,7 @@ namespace{
 
 
 Vertex
-read_vertex(const libjson::Object&  o, const Scope&  parent)
+read_vertex(const libjson::Object&  o, expree::Scope&  parent)
 {
   using namespace libjson;
 
@@ -19,7 +22,7 @@ read_vertex(const libjson::Object&  o, const Scope&  parent)
     for(auto&  m: o)
     {
       int  n = (m.value == ValueKind::number)? m.value->number:
-               (m.value == ValueKind::string)? parent[m.value->string]:0;
+               (m.value == ValueKind::string)? load_integer(parent,m.value->string):0;
 
            if(m.name == "x"){v.x = n;}
       else if(m.name == "y"){v.y = n;}
@@ -37,7 +40,7 @@ read_vertex(const libjson::Object&  o, const Scope&  parent)
 
 
 Line
-read_line(const libjson::Object&  o, const Scope&  parent)
+read_line(const libjson::Object&  o, expree::Scope&  parent)
 {
   using namespace libjson;
 
@@ -62,7 +65,7 @@ read_line(const libjson::Object&  o, const Scope&  parent)
 
 
 Polygon
-read_polygon(const libjson::Object&  o, const Scope&  parent)
+read_polygon(const libjson::Object&  o, expree::Scope&  parent)
 {
   using namespace libjson;
 
@@ -86,7 +89,7 @@ read_polygon(const libjson::Object&  o, const Scope&  parent)
 
 
 Tetragon
-read_tetragon(const libjson::Object&  o, const Scope&  parent)
+read_tetragon(const libjson::Object&  o, expree::Scope&  parent)
 {
   using namespace libjson;
 
@@ -112,9 +115,9 @@ read_tetragon(const libjson::Object&  o, const Scope&  parent)
 
 
 Object
-read_element(const libjson::Object&  jso, const Scope&  parent)
+read_element(const libjson::Object&  jso, expree::Scope&  parent)
 {
-  Scope  scope(&parent);
+  expree::Scope  scope(parent);
 
   Object  o;
 
@@ -122,9 +125,9 @@ read_element(const libjson::Object&  jso, const Scope&  parent)
 
     for(auto&  m: jso)
     {
-        if(m.name == "constants")
+        if((m.name == "expressions") && (m.value == ValueKind::array))
         {
-          scope += m.value;
+          read_expressions(m.value->array,scope);
         }
 
       else if(m.name == "line"    ){o.push(read_line(    m.value->object,scope));}
@@ -140,9 +143,9 @@ read_element(const libjson::Object&  jso, const Scope&  parent)
 
 
 Object
-read_object(const libjson::ObjectMember&  m, const Scope&  parent)
+read_object(const libjson::ObjectMember&  m, expree::Scope&  parent)
 {
-  Scope  scope(&parent);
+  expree::Scope  scope(parent);
 
   Object  o;
 
@@ -150,24 +153,27 @@ read_object(const libjson::ObjectMember&  m, const Scope&  parent)
 
   using namespace libjson;
 
-    if(m.value == ValueKind::object)
+    for(auto&  mm: m.value->object)
     {
-        for(auto&  mm: m.value->object)
+        if((mm.name == "expressions") && (mm.value == ValueKind::array))
         {
-            if(mm.name == "constants")
-            {
-              scope += mm.value;
-            }
+          read_expressions(mm.value->array,scope);
+        }
 
-          else
-            if((mm.name == "elements") && (mm.value == ValueKind::object))
+      else
+        if((mm.name == "elements") && (mm.value == ValueKind::object))
+        {
+            for(auto&  mmm: mm.value->object)
             {
-                for(auto&  mmm: mm.value->object)
+                if(mmm.value == ValueKind::object)
                 {
-                    if(mmm.value == ValueKind::object)
-                    {
-                      o.push(read_element(mmm.value->object,scope));
-                    }
+                  o.push(read_element(mmm.value->object,scope));
+                }
+
+              else
+                if((mmm.name == "expressions") && (mmm.value == ValueKind::array))
+                {
+                  read_expressions(mmm.value->array,scope);
                 }
             }
         }
@@ -181,10 +187,50 @@ read_object(const libjson::ObjectMember&  m, const Scope&  parent)
 }
 
 
+void
+read_expressions(const libjson::Array&  arr, expree::Scope&  scope)
+{
+    for(auto&  v: arr)
+    {
+        if(v == libjson::ValueKind::string)
+        {
+          load_integer(scope,v->string);
+        }
+    }
+}
+
+
+int
+load_integer(expree::Scope&  scope, const std::string&  s)
+{
+    try
+    {
+      expree::Parser  p(s);
+
+      auto  result = p.make_element().make_value(&scope,true);
+
+      result = expree::Object::remove_reference(result);
+
+      return result.to_integer().data;
+    }
+
+
+    catch(expree::Exception&  e)
+    {
+      printf("%s\n",e.what());
+    }
+
+
+  return 0;
+}
+
+
 Object
 load_object(const std::string&  s)
 {
-  Scope  scope;
+  expree::MemorySpace  memsp;
+
+  auto&  scope = memsp.get_global_scope();
 
   Object  container;
 
@@ -198,9 +244,9 @@ load_object(const std::string&  s)
     {
         for(auto&  m: v->object)
         {
-            if(m.name == "constants")
+            if((m.name == "expressions") && (m.value == ValueKind::array))
             {
-              scope += m.value;
+              read_expressions(m.value->array,scope);
             }
 
           else
@@ -208,7 +254,16 @@ load_object(const std::string&  s)
             {
                 for(auto&  mm: m.value->object)
                 {
-                  container.push(read_object(mm,scope));
+                    if((mm.name == "expressions") && (mm.value == ValueKind::array))
+                    {
+                      read_expressions(mm.value->array,scope);
+                    }
+
+                  else
+                    if(mm.value == ValueKind::object)
+                    {
+                      container.push(read_object(mm,scope));
+                    }
                 }
             }
         }

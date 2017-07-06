@@ -1,5 +1,4 @@
 #include"isom_load.hpp"
-#include"isom_scope.hpp"
 
 
 
@@ -7,8 +6,43 @@
 namespace{
 
 
+Point
+scan_string_as_point(const std::string&  s, expree::Scope&  scope)
+{
+  char  buf[256];
+
+  int  x;
+  int  y;
+  int  z;
+
+  int  n;
+
+  const char*  p = s.data();
+
+  sscanf(p," %256[^,],%n ",buf,&n);
+
+  p += n;
+
+  x = load_integer(scope,std::string(buf));
+
+  sscanf(p," %256[^,],%n ",buf,&n);
+
+  p += n;
+
+  y = load_integer(scope,std::string(buf));
+
+  sscanf(p," %256[^,],%n ",buf,&n);
+
+  p += n;
+
+  z = load_integer(scope,std::string(buf));
+
+  return Point(x,y,z);
+}
+
+
 Object
-read_object(const Object&  objects, const libjson::Object&  o, const Scope&  parent)
+read_object(const Object&  objects, const libjson::Object&  o, expree::Scope&  parent)
 {
   Object  container;
 
@@ -31,15 +65,25 @@ read_object(const Object&  objects, const libjson::Object&  o, const Scope&  par
             {
                 if((mm.name == "offset") && (mm.value == ValueKind::string))
                 {
-                  sscanf(mm.value->string.data()," %d , %d , %d",&offset.x,&offset.y,&offset.z);
+                  offset = scan_string_as_point(mm.value->string,parent);
 
                   tr.set_translation_flag();
                 }
 
               else
+                if((mm.name == "angle") && (mm.value == ValueKind::string))
+                {
+                  auto  angle = scan_string_as_point(mm.value->string,parent);
+
+                  tr.change_angle(angle.x,angle.y,angle.z);
+
+                  tr.set_rotation_flag();
+                }
+
+              else
                 if((mm.name == "increment") && (mm.value == ValueKind::string))
                 {
-                  sscanf(mm.value->string.data()," %d , %d , %d",&increment.x,&increment.y,&increment.z);
+                  increment = scan_string_as_point(mm.value->string,parent);
 
                   tr.set_translation_flag();
                 }
@@ -73,9 +117,9 @@ read_object(const Object&  objects, const libjson::Object&  o, const Scope&  par
 
 
 Object
-read_stage(const Object&  objects, const libjson::ObjectMember&  m, const Scope&  parent)
+read_stage(const Object&  objects, const libjson::ObjectMember&  m, expree::Scope&  parent)
 {
-  Scope  scope(&parent);
+  expree::Scope  scope(parent);
 
   Object  o;
 
@@ -87,9 +131,9 @@ read_stage(const Object&  objects, const libjson::ObjectMember&  m, const Scope&
     {
         for(auto&  mm: m.value->object)
         {
-            if(mm.name == "constants")
+            if(mm.name == "expressions" && (mm.value == ValueKind::array))
             {
-              scope += mm.value;
+              read_expressions(mm.value->array,scope);
             }
 
           else
@@ -114,7 +158,9 @@ read_stage(const Object&  objects, const libjson::ObjectMember&  m, const Scope&
 Object
 load_stage(const Object&  objects, const std::string&  s)
 {
-  Scope  scope;
+  expree::MemorySpace  memsp;
+
+  auto&  scope = memsp.get_global_scope();
 
   Object  container;
 
@@ -128,9 +174,9 @@ load_stage(const Object&  objects, const std::string&  s)
     {
         for(auto&  m: v->object)
         {
-            if(m.name == "constants")
+            if(m.name == "expressions" && (m.value == ValueKind::array))
             {
-              scope += m.value;
+              read_expressions(m.value->array,scope);
             }
 
           else
@@ -138,7 +184,16 @@ load_stage(const Object&  objects, const std::string&  s)
             {
                 for(auto&  mm: m.value->object)
                 {
-                  container.push(read_stage(objects,mm,scope));
+                    if(mm.value == ValueKind::object)
+                    {
+                      container.push(read_stage(objects,mm,scope));
+                    }
+
+                  else
+                    if(mm.name == "expressions" && (mm.value == ValueKind::array))
+                    {
+                      read_expressions(mm.value->array,scope);
+                    }
                 }
             }
         }

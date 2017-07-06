@@ -1,15 +1,15 @@
 cmake_minimum_required(VERSION 2.8)
 
 
-if(DEFINED SLEEPING_TIME)
+if(DEFINED SLP)
 else()
-  set(SLEEPING_TIME "0")
+  set(SLP "0")
 endif()
 
 
 find_program(CCACHE_FOUND ccache)
 if(CCACHE_FOUND)
-  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "  sleep ${SLEEPING_TIME};  CCACHE_DIR=/tmp/ccachedir ccache")
+  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "  sleep ${SLP};  CCACHE_DIR=/tmp/ccachedir ccache")
 endif(CCACHE_FOUND)
 
 
@@ -30,8 +30,8 @@ set(CMAKE_CXX_LINK_FLAGS  "-lstdc++ -lz -lpng -lSDL2 -lSDL2_image -lSDL2main")
 
 set(CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS}   -O2 -march=core2 -fomit-frame-pointer")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} -O2 -march=core2 -fomit-frame-pointer")
-set(CMAKE_C_FLAGS_DEBUG     "${CMAKE_C_FLAGS}   -Og -g")
-set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS} -Og -g")
+set(CMAKE_C_FLAGS_DEBUG     "${CMAKE_C_FLAGS}   -O0 -g")
+set(CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS} -O0 -g")
 
 
 if(EM)
@@ -39,7 +39,7 @@ if(EM)
   set(CMAKE_CXX_COMPILER  em++)
   set(CMAKE_CXX_FLAGS "-std=c++14 -Werror -Wno-switch -O2")
   set(CMAKE_CXX_FLAGS_DEBUG "")
-  set(CMAKE_CXX_LINK_FLAGS  "${CMAKE_CXX_LINK_FLAGS} -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s ALLOW_MEMORY_GROWTH=1 -s EXPORT_ALL=1 -s DISABLE_EXCEPTION_CATCHING=0 --preload-file texture.png --use-preload-plugins")
+  set(CMAKE_CXX_LINK_FLAGS  "${CMAKE_CXX_LINK_FLAGS} -s USE_SDL=2 -s USE_SDL_IMAGE=2 -s ALLOW_MEMORY_GROWTH=1 -s DISABLE_EXCEPTION_CATCHING=0 --preload-file texture.png --use-preload-plugins")
 endif()
 
 
@@ -64,17 +64,31 @@ set(SOURCES
   isom_font.cpp
   isom_image.cpp
   isom_screen.cpp
-  isom_scope.cpp
   isom_load_object.cpp
   isom_load_stage.cpp
 )
 
 
+set(EXPREE_SOURCES
+  expree/expree_element.cpp
+  expree/expree_element__make_value.cpp
+  expree/expree_operand.cpp
+  expree/expree_scope.cpp
+  expree/expree_primitive.cpp
+  expree/expree_object.cpp
+  expree/expree_object__operate.cpp
+  expree/expree_MemorySpace.cpp
+  expree/expree_parser.cpp
+  expree/expree_parser__make_element.cpp
+)
+
+
 include_directories(.)
+include_directories(./expree)
 include_directories(/usr/include/SDL2)
-add_executable("testLineContext${EXTENSION}" testLineContext.cpp ${SOURCES})
-add_executable("testBuilder${EXTENSION}" testBuilder.cpp ${SOURCES})
-add_executable("testCoBuilder${EXTENSION}" testCoBuilder.cpp ${SOURCES})
+add_executable("testLineContext${EXTENSION}" testLineContext.cpp ${SOURCES} ${EXPREE_SOURCES})
+add_executable("testBuilder${EXTENSION}" testBuilder.cpp ${SOURCES} ${EXPREE_SOURCES})
+add_executable("testCoBuilder${EXTENSION}" testCoBuilder.cpp ${SOURCES} ${EXPREE_SOURCES})
 
 
 if(EM)

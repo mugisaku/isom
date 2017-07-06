@@ -150,7 +150,7 @@ render(Renderer&  renderer) const
 
     if(normal_vector.z < 0)
     {
-      render_wire(renderer);
+//      render_wire(renderer);
 
       return;
     }
